@@ -1,0 +1,1 @@
+Class-Path: lib/antlr-2.7.7.jar lib/axiom-api-1.2.21.jar lib/axis2-adb-1.8.0.jar lib/castor-0.9.5.4.jar lib/commons-io-2.11.0.jar lib/commons-logging-1.2.jar lib/dns.jar lib/ehcache-2.10.9.2.jar lib/mail-1.4.jar lib/slf4j-api-1.7.28.jar lib/xercesImpl-2.12.1.jar lib/xml-apis.jar

@@ -1,0 +1,8 @@
+id 1 status draft creator empty access_policy empty resource many_operators =
+    DESCRIPTION "This exists just to ensure operators can be parsed and formatted"
+    NAME eq "A" and NAME neq "A" and
+    NAME lt "A" and NAME lte "A" and
+    NAME gt "A" and NAME gte "A" and
+    NAME eq_ci "A" and NAME neq_ci "A" and
+    NAME lt_ci "A" and NAME lte_ci "A" and
+    NAME gt_ci "A" and NAME gte_ci "A"

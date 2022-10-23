@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+	targetNamespace="http://bluejungle.com/destiny/framework/types" 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns:types="http://bluejungle.com/destiny/framework/types">
+	
+	<xs:element name="BadArgumentFault" type="types:BadArgumentFault"/>
+	
+	<xs:element name="CommitFault" type="types:CommitFault"/>
+	
+	<xs:element name="ServiceNotReadyFault" type="types:ServiceNotReadyFault"/>
+	
+	<xs:element name="UnauthorizedCallerFault" type="types:UnauthorizedCallerFault"/>
+	
+	<xs:element name="UnknownEntryFault" type="types:UnknownEntryFault"/>
+	
+	<xs:element name="UniqueConstraintViolationFault" type="types:UniqueConstraintViolationFault"/>
+
+	<xs:complexType name="BadArgumentFault"/>
+	<xs:complexType name="CommitFault"/>
+	<xs:complexType name="ServiceNotReadyFault"/>
+	<xs:complexType name="UnauthorizedCallerFault"/>
+	<xs:complexType name="UnknownEntryFault"/>
+	<xs:complexType name="UniqueConstraintViolationFault">
+		<xs:sequence>
+			<xs:element name="constrainingField" type="xs:string" minOccurs="1" 
+				maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

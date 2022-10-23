@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://bluejungle.com/destiny/services/enrollment/types" 
+			xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+			xmlns:common="http://bluejungle.com/destiny/framework/types"
+			xmlns:tns="http://bluejungle.com/destiny/services/enrollment/types">
+
+	<xsd:import
+			namespace="http://bluejungle.com/destiny/framework/types" 
+			schemaLocation="../../../../../../../../../../../common/framework/src/xsd/com/bluejungle/destiny/framework/types/BasicTypes.xsd"/>
+	
+	<xsd:import
+			namespace="http://bluejungle.com/destiny/framework/types" 
+			schemaLocation="../../../../../../../../../../../common/framework/src/xsd/com/bluejungle/destiny/framework/types/BasicFaults.xsd"/>
+			
+	<xsd:element name="InvalidConfigurationFault" type="tns:InvalidConfigurationFault"/>
+	
+	<xsd:element name="DictionaryFault" type="tns:DictionaryFault"/>
+	
+	<xsd:element name="EnrollmentFailedFault" type="tns:EnrollmentFailedFault"/>
+	
+	<xsd:element name="EnrollmentInternalFault" type="tns:EnrollmentInternalFault"/>
+	
+	<xsd:element name="DuplicatedFault" type="tns:DuplicatedFault"/>
+	
+	<xsd:element name="NotFoundFault" type="tns:NotFoundFault"/>
+	
+	<xsd:element name="ReservedAttributeNameFault" type="tns:ReservedAttributeNameFault"/>
+
+	<xsd:complexType name="InvalidConfigurationFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence> 
+	</xsd:complexType>
+
+	<xsd:complexType name="DictionaryFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence> 
+	</xsd:complexType>
+
+	<xsd:complexType name="EnrollmentFailedFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence> 
+	</xsd:complexType>
+
+	<xsd:complexType name="EnrollmentInternalFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence> 
+	</xsd:complexType>
+
+	<xsd:complexType name="DuplicatedFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="NotFoundFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence>
+	</xsd:complexType>
+    
+	<xsd:complexType name="ReservedAttributeNameFault">
+		<xsd:sequence>
+			<xsd:element name="msg" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+		</xsd:sequence> 
+	</xsd:complexType>
+
+</xsd:schema>

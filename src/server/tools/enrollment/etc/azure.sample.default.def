@@ -1,0 +1,27 @@
+# optional, default is true
+enroll.users                        true
+
+# optional, default is true
+enroll.groups                       true
+
+# missing values will be written as blank or the equivalent rather than skipped
+store.missing.attributes            true
+
+#-------------------------------------------------------------------------------
+# Attribute mappings,
+# user does not want to change left hand side of existing columns
+#-------------------------------------------------------------------------------
+
+#
+# user attribute mappings
+# 
+# the following user mapping is required only if enroll.users is true
+# principalName and (windowsSid or unixSid) are required
+#
+user.string.principalName            userPrincipalName
+user.cs-string.windowsSid            id
+user.string.displayname              displayName  
+user.string.firstName                givenName
+user.string.lastName                 surname
+user.multi-string.mail               mail
+

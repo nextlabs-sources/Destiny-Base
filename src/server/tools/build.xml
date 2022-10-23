@@ -1,0 +1,150 @@
+<project basedir="." name="server_tools" default="build-dbinit">
+
+    <var name="nlbuildroot" value="${basedir}/../../.." />
+    <property name="src.dir"          value="${basedir}"/>
+    <property name="tools.common.lib" value="${build.root.dir}/tools/common/lib"/>
+    <property name="tools.common.dll" value="${build.root.dir}/tools/common/dll"/>
+    <property name="tools.crypt.dir"  value="${build.root.dir}/tools/crypt"/>
+    <property name="tools.jboss.crypt.dir"  value="${build.root.dir}/tools/jbosscrypt"/>
+    
+    <property file="${nlbuildroot}/src/build-scripts/etc/build.properties" />
+
+    <target name="build-dbinit" depends="prepare">
+        <ant dir="${src.dir}/dbinit/src" target="build-dbinit" inheritRefs="true"/>
+    </target>
+
+    <target name="build-dbinit-misc" depends="prepare">
+        <ant dir="${src.dir}/dbinit/src" target="build-dbinit-misc" inheritRefs="true"/>
+    </target>
+
+    <target name="build-reporterData" depends="prepare">
+        <ant dir="${src.dir}/reporterData/src" target="build" inheritRefs="true"/>
+    </target>
+
+    <target name="build-importexport-cli" depends="prepare">
+        <ant dir="${src.dir}/importexport" target="build" inheritRefs="true"/>
+    </target>
+
+    <target name="build-datasync-cli" depends="prepare">
+            <ant dir="${src.dir}/datasync" target="build" inheritRefs="true"/>
+    </target>
+    
+    <target name="build-automation" depends="prepare">
+        <ant dir="${src.dir}/automation/src" target="build" inheritRefs="true"/>
+        <ant dir="${src.dir}/automation/src" target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.dir}/automation/src" target="package-log-remover" inheritRefs="true"/>
+    </target>
+
+    <target name="prepare">
+        <mkdir dir="${tools.common.lib}"/>
+        <mkdir dir="${tools.common.dll}"/>
+        <mkdir dir="${tools.crypt.dir}"/>
+        <mkdir dir="${tools.jboss.crypt.dir}"/>
+    </target>
+
+    <target name="setup-tools" depends="setup-common-libs, setup-crypt">
+        <ant dir="${src.dir}/dbinit/src"                          target="setup-tool" inheritRefs="true"/>
+        <!-- Skipping target reporterdata. It appears to be a test tool to seed some pa logs into the db. Doesn't build after
+             AXIS2 changes and I'm not sure I'll miss it
+             <ant dir="${src.dir}/reporterdata/src"                    target="setup-tool" inheritRefs="true"/>
+        -->
+        <ant dir="${src.root.dir}/server/pf"                      target="package-location-importer" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/pf"                      target="package-batch-deployer" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/common"            target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/datasync"          target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/enrollment"        target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/enrollmentPreview" target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/importexport"      target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/keymanagement"     target="setup-tool" inheritRefs="true"/>
+        <ant dir="${src.root.dir}/server/tools/InstallService"    target="setup-tool" inheritRefs="true"/>
+    </target>
+
+    <target name="setup-common-libs" depends="prepare">
+        <copy todir="${tools.common.lib}">
+            <fileset dir="${build.root.dir}">
+                <include name="agent-ipc.jar"/>
+                <include name="app-framework.jar"/>
+                <include name="client-pf.jar"/>
+                <include name="client-security-config.jar"/>
+                <include name="common-dictionary.jar"/>
+                <include name="common-domain.jar"/>
+                <include name="common-framework-types.jar"/>
+                <include name="common-framework.jar"/>
+                <include name="common-pf.jar"/>
+                <include name="configurationFileParser.jar"/>
+                <include name="crypt.jar"/>
+                <include name="ddif-tools.jar"/>
+                <include name="mail-1.4.jar"/>
+                <include name="policy-services.jar"/>
+                <include name="policy-types.jar"/>
+                <include name="server-base.jar"/>
+                <include name="server-datasource.jar"/>
+                <include name="server-dcsf.jar"/>
+                <include name="server-dictionary.jar"/>
+                <include name="server-framework.jar"/>
+                <include name="server-pf.jar"/>
+                <include name="server-shared-enumerations.jar"/>
+                <include name="server-shared-services.jar"/>
+            </fileset>
+            <fileset refid="jackson.jars"/>
+            <fileset refid="xerces.jars"/>
+        </copy>
+
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/activation-1.1.jar"/>
+        <copy todir="${tools.common.lib}" file="${antlr.jar}"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/castor-0.9.5.4.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/cglib-full-2.0.2.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-collections-3.2.2.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-beanutils-1.9.4.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-digester-2.1.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-discovery-0.5.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-logging-1.2.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/dom4j-2.1.3.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/ehcache-1.1.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/hibernate2.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/jta.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/jtds-1.2.2.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/mail-1.4.jar"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/odmg-3.0.jar"/>
+        <copy todir="${tools.common.lib}" file="${db2.jdbc}"/>
+        <copy todir="${tools.common.lib}" file="${oracle.jdbc}"/>
+        <copy todir="${tools.common.lib}" file="${postgres.jdbc}"/>
+        <copy todir="${tools.common.lib}" file="${sqlserver.jdbc}"/>
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/apache-mime4j-core-0.8.7.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axiom-api-1.3.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axiom-dom-1.3.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axiom-impl-1.3.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axis2-adb-1.8.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axis2-jaxws-1.8.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axis2-kernel-1.8.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axis2-transport-http-1.8.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/axis2-transport-local-1.8.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-codec-1.15.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-fileupload-1.4.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-io-2.11.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/commons-logging-1.2.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/geronimo-annotation_1.0_spec-1.1.1.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/geronimo-ws-metadata_2.0_spec-1.1.3.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/httpclient-4.5.13.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/httpcore-4.4.11.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/jaxen-1.2.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/jsr311-api-1.1.1.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/neethi-3.1.1.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/stax2-api-4.2.1.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/woden-core-1.0M10.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/wsdl4j-1.6.3.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/xmlbeans-5.0.0.jar" />
+        <copy todir="${tools.common.lib}" file="${xlib_jar_dir}/xmlschema-core-2.2.5.jar" />
+    </target>
+
+    <target name="setup-crypt">
+        <copy todir="${tools.crypt.dir}" file="${build.root.dir}/crypt.jar"/>
+        <copy todir="${tools.crypt.dir}" file="${src.root.dir}/server/tools/mkpassword/mkpassword.bat"/>
+		<copy todir="${tools.crypt.dir}" file="${src.root.dir}/server/tools/mkpassword/mkpassword.sh"/>
+		
+        <copy tofile="${tools.jboss.crypt.dir}/mkpassword.bat" file="${src.root.dir}/server/tools/mkpassword/jboss_mkpassword.bat"/>
+        <copy todir="${tools.jboss.crypt.dir}" file="${src.root.dir}/server/tools/mkpassword/mkpassword.sh"/>
+        <copy todir="${tools.jboss.crypt.dir}" file="${build.root.dir}/common-framework.jar"/>
+        <copy todir="${tools.jboss.crypt.dir}" file="${build.root.dir}/crypt.jar"/>
+    </target>
+</project>

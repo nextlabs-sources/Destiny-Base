@@ -1,0 +1,349 @@
+<project name="Shared web services" default="build">
+
+	<property name="src.dir"      value="${basedir}"/>
+	<property name="base.service.dir" value="com/bluejungle/destiny" />
+	<property name="build.gendest" value="${build.root.dir}/server/container/shared/genclasses"/>
+
+	<target name="pre-build">
+		<mkdir dir="${build.gendest}"/>
+		<mkdir dir="${public.gen.dir}/secureService/dac"/>
+		<mkdir dir="${public.gen.dir}/secureService/dms"/>
+		<mkdir dir="${gen.dir}/secureService/dem"/>
+		<mkdir dir="${gen.dir}/secureService/dms"/>
+		<mkdir dir="${gen.dir}/secureService/dps"/>
+		<mkdir dir="${gen.dir}/secureService/dkms"/>
+	</target>
+
+	<target name="build" depends="check-wsdl, wsdl-jar">
+	</target>
+
+	<target name="check-wsdl">
+		<!-- this is a wholesale check.  If even one xsd or wsdl is out of date with one of the 
+	     wsld-jars, all wsdl gets rebuilt.
+	-->
+		<uptodate property="sharedWsdlBuild.notRequired" targetfile="${build.root.dir}/server-shared-services.jar">
+			<srcfiles dir="${src.dir}/${base.service.dir}" includes="**/*.xsd, **/*.wsdl"/>
+		</uptodate>
+	</target>
+
+	<target name="wsdl-generate" depends="pre-build" unless="sharedWsdlBuild.notRequired">
+
+		<!-- Takes care of the Secure Session service for DAC -->
+		<!--
+				trustedCallers="DCC"
+				userAuthRequired="true"
+				clientApplication="Inquiry Center"
+                -->
+        <delete dir="${public.gen.dir}/secureService/dac/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.secure_session.v1"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="-uri"/>
+            <arg file="${src.dir}/${base.service.dir}/services/SecureSessionService.v1.wsdl"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--all-ports"/>
+            <arg value="--generate-all"/>
+            <arg value="--service-description"/>
+            <arg value="--output"/>
+            <arg file="${public.gen.dir}/secureService/dac"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="SecureSessionServiceIF"/>
+        </java>
+        <replaceregexp file="${public.gen.dir}/secureService/dac/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dac/services/SecureSessionService/META-INF/">
+            <fileset dir="${public.gen.dir}/secureService/dac/resources/"/>
+        </move>
+
+		<!-- Takes care of the Secure Session service for DMS -->
+        <delete dir="${gen.dir}/secureService/dms/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}/secureService/dms"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.secure_session.v1"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--test-case"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="SecureSessionServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${src.dir}/${base.service.dir}/services/SecureSessionService.v1.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/secureService/dms/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dms/services/SecureSessionService/META-INF/">
+            <fileset dir="${gen.dir}/secureService/dms/resources/"/>
+        </move>
+		<!--
+				factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+				trustedCallers="DCC"
+				userAuthRequired="true"
+				clientApplication="Management Console"
+                -->
+		<!-- Takes care of the Secure Session service for DPS -->
+        <delete dir="${gen.dir}/secureService/dps/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}/secureService/dps"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.secure_session.v1"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--test-case"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="SecureSessionServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${src.dir}/${base.service.dir}/services/SecureSessionService.v1.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/secureService/dps/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dps/services/SecureSessionService/META-INF/">
+            <fileset dir="${gen.dir}/secureService/dps/resources/"/>
+        </move>
+
+		<!--
+			factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+			trustedCallers="DCC PolicyAuthor"
+			userAuthRequired="true"
+			clientApplication="Policy Author"
+        -->
+		<!-- Takes care of the Secure Session service for DEM -->
+        <delete dir="${public.gen.dir}/secureService/dem/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}/secureService/dem"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.secure_session.v1"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--test-case"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="SecureSessionServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${src.dir}/${base.service.dir}/services/SecureSessionService.v1.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/secureService/dem/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dem/services/SecureSessionService/META-INF/">
+            <fileset dir="${gen.dir}/secureService/dem/resources/"/>
+        </move>
+		<!--
+			implementationClassName="com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl"
+			factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+			trustedCallers="Enrollment"
+			userAuthRequired="true"
+			clientApplication="EnrollmentMgr"
+        -->
+		<!-- Takes care of the User Preferences service for DAC -->
+        <delete dir="${public.gen.dir}/secureService/dac/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="--output"/>
+            <arg value="${public.gen.dir}/secureService/dac"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.user_preferences.v1"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--test-case"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="UserPreferencesIF"/>
+            <arg value="-uri"/>
+            <arg value="${src.dir}/${base.service.dir}/services/UserPreferencesService.v1.wsdl"/>
+        </java>
+        <replaceregexp file="${public.gen.dir}/secureService/dac/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.userpreferences.service.UserPreferencesIFBindingImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dac/services/UserPreferencesService/META-INF/">
+            <fileset dir="${public.gen.dir}/secureService/dac/resources/"/>
+        </move>
+		<!--
+			factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+			trustedCallers="DCC"
+			userAuthRequired="true"
+			clientApplication="Inquiry Center"
+        -->
+		<!-- Takes care of the User Preferences service for DMS -->
+        <delete dir="${gen.dir}/secureService/dms/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}/secureService/dms"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.user_preferences.v1"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--test-case"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="UserPreferencesIF"/>
+            <arg value="-uri"/>
+            <arg value="${src.dir}/${base.service.dir}/services/UserPreferencesService.v1.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/secureService/dms/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.userpreferences.service.UserPreferencesIFBindingImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dms/services/UserPreferencesService/META-INF/">
+            <fileset dir="${gen.dir}/secureService/dms/resources/"/>
+        </move>
+
+        <!--
+                deployscope="application"
+                implementationClassName="com.bluejungle.destiny.container.shared.userpreferences.service.UserPreferencesIFBindingImpl"
+                factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+                trustedCallers="DCC"
+                userAuthRequired="true"
+                clientApplication="Inquiry Center"
+        -->
+		<!-- Takes care of the Secure Session service for DKMS -->
+        <delete dir="${gen.dir}/secureService/dkms/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://bluejungle.com/destiny/services/secure_session/v1=com.bluejungle.destiny.services.secure_session.v1,http://bluejungle.com/destiny/bindings/secure_session/v1=com.bluejungle.destiny.bindings.secure_session.v1,http://bluejungle.com/destiny/interfaces/secure_session/v1=com.bluejungle.destiny.interfaces.secure_session.v1,http://bluejungle.com/destiny/types/secure_session/v1=com.bluejungle.destiny.types.secure_session.v1"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}/secureService/dkms"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.interfaces.secure_session.v1"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--test-case"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="SecureSessionServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${src.dir}/${base.service.dir}/services/SecureSessionService.v1.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/secureService/dkms/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dkms/services/SecureSessionService/META-INF/">
+            <fileset dir="${gen.dir}/secureService/dkms/resources/"/>
+        </move>
+
+        <!--
+            implementationClassName="com.bluejungle.destiny.container.shared.securesession.service.SecureSessionServiceV1Impl"
+            deployscope="application"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="DCC Keymanagement"
+            userAuthRequired="true"
+            clientApplication="KeymanagementMgr"
+        -->
+	</target>
+
+	<!-- Compiles only the DAC service. DMS is the same and will reuse the same JAR file -->
+	<target name="wsdl-compile" unless="sharedWsdlBuild.notRequired">
+		<javac 
+				srcdir="${public.gen.dir}/secureService/dac" 
+				destdir="${build.gendest}" 
+				debug="${compile.debug}" 
+				verbose="${compile.verbose}"
+                source="${compile.source}"
+                target="${compile.target}"
+				bootclasspath="${compile.bootclasspath}"
+                includeantruntime="false">
+			<classpath refid="compile.classpath"/>
+			<include name="**/*.java"/>
+		</javac>
+
+		<!-- Compile the Axis-generated Java files for the shared-folder-data component -->
+		<javac 
+				srcdir="${gen.dir}" 
+				destdir="${build.gendest}" 
+				debug="${compile.debug}" 
+				verbose="${compile.verbose}"
+                source="${compile.source}"
+                target="${compile.target}"
+				bootclasspath="${compile.bootclasspath}"
+                includeantruntime="false">
+			<classpath refid="compile.classpath"/>
+			<include name="**/shared_folder/*.java"/>
+			<exclude name="**/CustomObligation.java"/>
+			<exclude name="**/CustomObligationsData.java"/>
+			<exclude name="**/SharedFolder*.java"/>
+		</javac>
+	</target>
+
+	<!-- JAR the web service generated class files -->
+	<target name="wsdl-jar" unless="sharedWsdlBuild.notRequired">
+		<jar destfile="${build.root.dir}/server-shared-services.jar">
+			<fileset dir="${build.gendest}">
+				<include name="${base.service.dir}/services/**/*"/>
+				<include name="${base.service.dir}/bindings/**/*"/>
+				<include name="${base.service.dir}/interfaces/**/*"/>
+			</fileset>
+		</jar>
+		<jar destfile="${build.root.dir}/server-shared-types.jar">
+			<fileset dir="${build.gendest}">
+				<include name="${base.service.dir}/types/secure_session/**/*"/>
+				<include name="${base.service.dir}/types/basic/**/*"/>
+				<include name="${base.service.dir}/types/basic_faults/**/*"/>
+			</fileset>
+		</jar>
+	</target>
+</project>

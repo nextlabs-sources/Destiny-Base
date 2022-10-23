@@ -1,0 +1,21 @@
+# This is the connection file for a default Azure AD enrollment
+
+## Usually this value will not need to be changed
+azure-oauth-authority          https://login.microsoftonline.com/
+
+tenant                   mytenant.onmicrosoft.com
+application-id           <application-id>
+
+# Comment this line out to be prompted for the value when performing
+# enrollment
+application-key          <application-key>
+
+#-------------------------------------------------------------------------------
+# The start time and pull interval for automatic sync 
+# The format of ScheduledSyncTime must be format of "Oct 4, 2006 8:14 PM"
+# The ScheduledSyncInterv is a positive number in minutes. 
+# Zero value of ScheduledSyncInterv means auto-sync is disabled
+#-------------------------------------------------------------------------------
+ScheduledSyncTime        Sep 27, 2006 8:14 AM
+ScheduledSyncInterv      0
+ScheduledSyncTimeFormat	 dd-MMM-yyyy HH:mm

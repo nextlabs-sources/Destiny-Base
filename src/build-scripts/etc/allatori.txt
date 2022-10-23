@@ -1,0 +1,21 @@
+Stack trace
+-----------
+
+java -cp <path to allatori.jar> com.allatori.StackTrace allatori-log.xml <file with obfuscated stack trace> <output file>
+
+Rebuild allatori-log.xml
+------------------------
+
+# First build the system
+ant -f build.xml allatori-log
+
+You need to do this if you have added new classes or methods under
+common/pf, client/pf, server/pf, server/dictionary, or
+common/framework (i.e. the obfuscated jars). The log file provides a
+mapping between the obfuscated class names and the originals and helps
+to preserve line numbers information for stack traces (see above)
+
+The log ensures that we don't have collisions between two classes in
+different jars, but the same package (this is not usual in the real
+world, but we break up packages into server, client, and common, so
+we see it a lot).

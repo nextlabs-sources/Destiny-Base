@@ -1,0 +1,68 @@
+<fileset id="core.axis.jars" dir="${axis.lib}">
+    <include name="**/*.jar"/>
+    <exclude name="**/xalan-2.7.0.jar"/>
+    <exclude name="**/log4j-*"/>
+    <exclude name="**/commons-logging*.jar"/>
+    <exclude name="**/servlet.jar"/>                    
+    <exclude name="**/mailapi_1_3_1.jar"/>
+    <exclude name="**/commons-codec-1.2.jar"/>
+    <exclude name="**/xmlbeans-2.6.0.jar"/>
+    <exclude name="**/apache-mime4j-core-0.8.4.jar"/>
+    <exclude name="**/gson-2.8.7.jar"/>
+    <exclude name="**/tomcat-juli-10.0.8.jar"/>
+    <exclude name="**/tomcat-tribes-10.0.8.jar"/>
+</fileset>
+
+<fileset id="xalan.jars" dir="${xlib_jar_dir}">
+    <include name="**/xalan-2.7.2.jar"/>
+    <include name="**/serializer-2.7.2.jar"/>
+</fileset>
+
+<union id="axis.jars">
+    <resources refid="core.axis.jars"/>
+    <resources refid="xalan.jars"/>
+    <fileset dir="${xlib_jar_dir}"> 
+        <include name="**/xmlbeans-5.0.0.jar"/>
+        <include name="**/tomcat-tribes-10.1.0-M10.jar"/>
+        <include name="**/tomcat-juli-10.1.0-M10.jar"/>
+    </fileset>
+</union>
+
+<fileset id="xerces.jars" dir="${xlib_jar_dir}">
+    <include name="**/xercesImpl-2.12.1.jar"/>      
+    <include name="**/xml-apis.jar"/>      
+</fileset>
+
+<fileset id="jackson.jars" dir="${xlib_jar_dir}">
+    <include name="dependencies/jackson-annotations-2.13.3.jar"/>
+    <include name="dependencies/jackson-core-2.13.3.jar"/>
+    <include name="dependencies/jackson-databind-2.13.3.jar"/>
+</fileset>
+
+<fileset id="log4j.jars" dir="${xlib_jar_dir}">
+    <include name="**/log4j-api-2.18.0.jar"/>
+    <include name="**/log4j-core-2.18.0.jar"/>
+    <include name="**/log4j-jcl-2.18.0.jar"/>
+    <include name="**/log4j-slf4j-impl-2.18.0.jar"/>
+    <include name="**/slf4j-api-1.7.36.jar"/>
+    <include name="log4j-over-slf4j-1.7.28"/>
+    <include name="jul-to-slf4j-1.7.28.jar"/>
+    <include name="jcl-over-slf4j-1.7.28.jar"/>
+    <include name="disruptor-3.3.11.jar"/>
+</fileset>
+
+<path id="compile.classpath">
+    <pathelement location="${xlib_jar_dir}/catalina.jar" />
+    <pathelement location="${xlib_jar_dir}/tools.jar" />
+    <pathelement location="${xlib_jar_dir}/junit-4.3.jar" />
+    <pathelement location="${xlib_jar_dir}/jsse.jar" />
+    <pathelement location="${xlib_jar_dir}/activation.jar" />
+    <pathelement location="${xlib_jar_dir}/mail.jar" />
+    <pathelement location="${xlib_jar_dir}/servlet-api.jar" />
+    <resources refid="axis.jars" />
+    <pathelement location="${xlib_jar_dir}/xmlbeans-5.0.0.jar" />
+    <pathelement location="${xlib_jar_dir}/hibernate2.jar" />
+    <pathelement path="${java.class.path}" />
+    <pathelement location="${xlib_jar_dir}/commons-logging-1.2.jar" />
+    <pathelement location="${xlib_jar_dir}/c3p0-0.9.5.5.jar" />
+</path>

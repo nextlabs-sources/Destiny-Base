@@ -1,0 +1,73 @@
+<project  name="Oauth2 JWT Authentication" default="build">
+	<echo message="Basedir is ${basedir}"/>
+	
+    <property name="src.main.java.dir" value="${basedir}/src/main/java" />
+	<property name="src.test.java.dir" value="${basedir}/src/test/java" />
+	
+    <property name="build.target.dir" value="${basedir}/target" />
+	<property name="build.classes.dir" value="${build.target.dir}/classes" />
+    
+	<property name="package.name" value="nextlabs-oauth2-jwt" />
+	<property name="product.name" value="nextlabs-oauth2-jwt" />
+    
+	<property name="compile.debug" value="true" />
+    
+	<path id="build.classpath">
+		<fileset dir="${xlib_jar_dir}">
+			<include name="servlet-api.jar" />
+            <include name="commons-logging-1.2.jar" />
+			<include name="java-jwt-3.19.2.jar" />
+			<include name="commons-codec-1.15.jar" />
+			<include name="bcprov-jdk15on-168.jar" />
+			<include name="spring-security-crypto-5.7.3.jar"/>
+		</fileset>
+        <fileset refid="jackson.jars"/>
+        <pathelement path="${build.root.dir}/common-framework.jar"/>
+	</path>
+    
+	<target name="clean" description="Delete all artifacts in target folder">
+        <delete includeEmptyDirs="true" failonerror="false">
+            <fileset dir="${build.target.dir}" />
+        </delete>
+		<echo>Deleted folder: ${build.target.dir}</echo>
+    </target>
+	
+	<target name="pre-build">
+		<mkdir dir="${build.target.dir}" />
+		<mkdir dir="${build.classes.dir}" />
+	</target>
+	
+	<target name="compile" description="Compile the source code"
+        depends="pre-build">
+        <javac srcdir="${src.main.java.dir}" destdir="${build.classes.dir}"
+               debug="${compile.debug}" debuglevel="lines,vars,source"
+               includeantruntime="false"
+               source="${compile.source}" target="${compile.target}">
+            <classpath refid="build.classpath" />
+            <include name="**/*.java" />
+        </javac>
+    </target>
+    
+	<target name="setup-jar">
+        <echo>Creating nextlabs oauth2 jwt authentication jar file: ${package.name}.jar</echo>
+
+        <jar destfile="${build.target.dir}/${package.name}.jar" basedir="${build.classes.dir}" excludes="**/*Test.class">
+            <manifest>
+                <attribute name="Java-Version" value="${java.version}" />
+                <attribute name="Implementation-Vendor" value="NextLabs, Inc." />
+                <attribute name="Implementation-Title" value="${product.name}" />
+            </manifest>
+        </jar>
+    </target>
+    
+	<target name="package">
+        <echo>Coping files to ${build.root.dir}</echo>
+        
+        <copy file="${build.target.dir}/${package.name}.jar" todir="${build.root.dir}" verbose="true" 
+        	failonerror="true" overwrite="true"/>
+        
+    </target>
+	
+	<target name="build" depends="clean, pre-build, compile, setup-jar, package" />
+
+</project>

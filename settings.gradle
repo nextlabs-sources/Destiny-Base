@@ -1,0 +1,2 @@
+rootProject.name = 'server-base'
+include 'dependency-management-helper'

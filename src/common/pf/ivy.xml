@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="1.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation=
+                  "http://incubator.apache.org/ivy/schemas/ivy.xsd">
+    <info organisation="nextlabs"
+          module="common-pf"
+		  revision="3.0"/>
+    <configurations>
+	    <conf name="main" visibility="public" />
+	    <conf name="antlr" visibility="private" />
+		<conf name="test" visibility="public" />
+		<conf name="report" visibility="private" />
+	</configurations>
+	<publications>
+	</publications>
+	<dependencies>
+		<dependency org="nextlabs" name="common-framework" rev="latest.integration" conf="antlr,main,test->main" />
+		<dependency org="nextlabs" name="common-domain" rev="latest.integration" conf="antlr,main,test->main" />
+		<dependency org="nextlabs" name="common_version" rev="latest.integration" conf="main->main" />
+	</dependencies>
+</ivy-module>

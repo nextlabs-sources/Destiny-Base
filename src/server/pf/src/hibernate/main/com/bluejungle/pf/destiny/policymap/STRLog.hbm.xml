@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!-- $Id: //depot/Destiny/D_Nimbus/release/8.1.2/main/src/server/pf/src/hibernate/main/com/bluejungle/pf/destiny/policymap/STRLog.hbm.xml#1 $ -->
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping package="com.bluejungle.pf.destiny.policymap">
+    <class name="STRLog" table="pf_target_resolutions" optimistic-lock="version">
+        <id name="id">
+            <generator class="native"/>
+        </id>
+
+        <version name="version" type="long"/>
+
+		<property name="domains" column="domain_key" type="com.bluejungle.framework.datastore.hibernate.usertypes.StringArrayAsString" not-null="true"/>
+
+        <property name="buildTime" column="buildTime" type="com.bluejungle.framework.datastore.hibernate.usertypes.DateToLongUserType" not-null="true"/>
+
+        <property name="policiesForAllUsersData" type="binary" column="policies_for_all_users" not-null="false"/>
+
+        <property name="policiesForAllHostsData" type="binary" column="policies_for_all_hosts" not-null="false"/>
+
+        <property name="policiesForAllAppsData" type="binary" column="policies_for_all_apps" not-null="false"/>
+
+        <property name="subjectMappings" type="com.bluejungle.framework.datastore.hibernate.usertypes.StreamableUserType">
+            <column name="subject_mappings" length="2147483647" not-null="false"/>
+        </property>
+        
+        <property name="actionMappings" type="com.bluejungle.framework.datastore.hibernate.usertypes.StreamableUserType">
+            <column name="action_mappings" length="2147483647" not-null="false"/>
+        </property>
+        
+        <property name="actionNameMappings" type="com.bluejungle.framework.datastore.hibernate.usertypes.StreamableUserType">
+            <column name="action_name_mappings" length="2147483647" not-null="false"/>
+        </property>
+		
+        <property name="policies" type="com.bluejungle.framework.datastore.hibernate.usertypes.StreamableUserType">
+            <column name="policies" length="2147483647" not-null="false"/>
+        </property>
+
+    </class>
+</hibernate-mapping>

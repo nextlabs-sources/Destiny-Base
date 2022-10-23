@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="1.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation=
+                  "http://incubator.apache.org/ivy/schemas/ivy.xsd">
+	<info organisation="nextlabs"
+		  module="server-security"
+		  revision="2.5"/>
+	<configurations>
+		<conf name="main" visibility="private" />
+		<conf name="test" visibility="public" />
+		<conf name="report" visibility="private" />
+	</configurations>
+	<publications>
+		<artifact conf="main" name="api-checker" type="mar"/>
+		<artifact conf="main" name="certificate-checker" type="mar"/>
+		<artifact conf="main" name="server-security" />
+		<artifact conf="main" name="server-axis-security" />
+		<artifact conf="main" name="policyAuthor" type="cer" />
+		<artifact conf="main" name="policyAuthor-keystore" type="p12" />
+		<artifact conf="main" name="policyAuthor-truststore" type="p12" />
+		<artifact conf="main" name="agent-keystore" type="p12" />
+		<artifact conf="main" name="agent-truststore" type="p12" />
+		<artifact conf="main" name="dcc-keystore" type="p12" />
+		<artifact conf="main" name="dcc-truststore" type="p12" />
+		<artifact conf="main" name="enrollment" type="cer" />
+		<artifact conf="main" name="enrollment-keystore" type="p12" />
+		<artifact conf="main" name="enrollment-truststore" type="p12" />
+		<artifact conf="main" name="temp_agent" type="cer" />
+		<artifact conf="main" name="orig_temp_agent" type="cer" />
+		<artifact conf="main" name="temp_agent-keystore" type="p12" />
+		<artifact conf="main" name="temp_agent-truststore" type="p12" />
+		<artifact conf="main" name="web-keystore" type="p12" />
+		<artifact conf="main" name="web-truststore" type="p12" />
+		<artifact conf="main" name="keymanagement" type="cer" />
+		<artifact conf="main" name="keymanagement-keystore" type="p12" />
+		<artifact conf="main" name="keymanagement-truststore" type="p12" />
+
+		<artifact conf="report" type="xml" name="test/TEST-com.bluejungle.destiny.server.security.ServerSecurityTestSuite" />
+	</publications>
+	<dependencies>
+		<!-- Dependencies for main and test -->
+		<dependency org="nextlabs" name="common-framework" rev="latest.integration" conf="main,test->main" />
+	</dependencies>
+</ivy-module>

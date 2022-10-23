@@ -1,0 +1,12 @@
+<module name="api-checker" class="com.bluejungle.destiny.server.security.APIAuthCheckerModule"/>
+    <InFlow>
+        <handler name="InFlowEnrollmentHandler" class="com.bluejungle.destiny.container.server.security.APIAuthChecker">
+            <order phase="authenticationRequestPhase"/>
+        </handler>
+    </InFlow>
+    <InFlowFault>
+        <handler name="FaultInFlowEnrollmentHandler" class="com.bluejungle.destiny.server.security.APIAuthChecker">
+            <order phase="authenticationRequestPhase"/>
+        </handler>
+    </InFlowFault>
+</module>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping package="com.bluejungle.destiny.container.shared.applicationusers.repository.hibernateimpl">
+	<class name="SuperUserDO" table="SUPER_APPLICATION_USER">
+		<id name="id">
+			<generator class="assigned"/>
+		</id>
+		<property name="login" column="username" length="64" type="string" not-null="true" unique="true"/>
+        <property name="firstName" column="first_name" type="string" length="64" not-null="true"/>
+        <property name="lastName" column="last_name" type="string" length="64" />
+   		<many-to-one name="accessDomain" class="AccessDomainDO" column="DOMAIN_ID" cascade="none" update="false" not-null="true"/>
+		<many-to-one name="hibernatePrimaryAccessGroup" class="BaseAccessGroupDO" column="PRIMARY_GROUP_ID" cascade="none" insert="false" />
+       	<property name="password" length="256" type="binary" />
+        
+        <property name="createdDate" column="created_date" type="timestamp"/>
+        <property name="lastUpdatedBy" column="last_updated_by" type="long"/>
+        <property name="lastUpdated" column="last_updated" type="timestamp"/>
+        <property name="createdBy" column="created_by" type="long"/>
+        <property name="displayName" column="displayname" type="string" length="255"/>
+        <property name="hideSplash" column="hide_splash" type="boolean"/>
+        <property name="lastLoggedTime" column="last_logged_time" type="long"/>
+        <property name="email" column="email" type="string" length="255"/>
+		<property name="initialLoginDone" column="initlogin_done" type="string" length="1"/>
+		<property name="failedLoginAttempts" column="failed_login_attempts" type="integer" not-null="true"/>
+		<property name="locked" column="locked" type="boolean" not-null="true"/>
+		<property name="manualProvision" column="manual_provision" type="boolean" not-null="true"/>
+	</class>
+</hibernate-mapping>

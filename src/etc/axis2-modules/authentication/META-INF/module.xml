@@ -1,0 +1,22 @@
+<module name="authentication-handler" class="com.bluejungle.destiny.container.shared.securesession.service.axis.AuthenticationFlowHandlerModule"/>
+    <InFlow>
+        <handler name="InFlowEnrollmentHandler" class="com.bluejungle.destiny.container.shared.securesession.service.axis.AuthenticationRequestFlowHandler">
+            <order phase="authenticationRequestPhase"/>
+        </handler>
+    </InFlow>
+    <InFlowFault>
+        <handler name="FaultInFlowEnrollmentHandler" class="com.bluejungle.destiny.container.shared.securesession.service.axis.AuthenticationRequestFlowHandler">
+            <order phase="authenticationRequestPhase"/>
+        </handler>
+    </InFlowFault>
+    <OutFlow>
+        <handler name="OutFlowEnrollmentHandler" class="com.bluejungle.destiny.container.shared.securesession.service.axis.AuthenticationResponseFlowHandler">
+            <order phase="authenticationResponsePhase"/>
+        </handler>
+    </OutFlow>
+    <OutFlowFault>
+        <handler name="FaultOutFlowEnrollmentHandler" class="com.bluejungle.destiny.container.shared.securesession.service.axis.AuthenticationResponseFlowHandler">
+            <order phase="authenticationResponsePhase"/>
+        </handler>
+    </OutFlowFault>
+</module>

@@ -1,0 +1,6 @@
+DESKTOP 8.0.0.0
+id 0 POLICY SubjectMultivalue FOR * ON * BY user.a = [1, 2, 3] DO DENY
+id 1 POLICY ResourceMultivalue FOR resource.a = [1, 2, 3] ON * BY * DO DENY
+id 2 POLICY SendToMultivalue FOR * ON * SENT_TO user.foo = [1, 2, 3] BY * DO DENY
+id 3 POLICY TargetResourceMultivalue FOR * ON * TO resource.a = [1, 2, 3] BY * DO DENY
+id 4 POLICY ConditionMultivalue FOR * ON * BY * WHERE user.foo = [1, 2, 3] DO DENY

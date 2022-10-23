@@ -1,0 +1,261 @@
+<project name="dem" default="build">
+
+	<var name="nlbuildroot" value="${basedir}/../../../.." />
+	<property name="src.dir"           value="${basedir}"/>
+    <property name="etc.src.dir"       value="${src.dir}/src/etc"/>
+    <property name="hibernate.src.dir" value="${src.dir}/src/hibernate"/>
+    <property name="java.main.src.dir" value="${src.dir}/src/java/main"/>
+    <property name="java.test.src.dir" value="${src.dir}/src/java/test"/>
+    <property name="servicesbase.dir"  value="com/bluejungle/destiny/"/>
+    <property name="src.wsdl.dir"      value="${src.dir}/src/wsdl"/>
+    <property name="server.base.dir"   value="${src.root.dir}/server/base/"/>
+
+    <property name="build.authentication.module"        value="${build.root.dir}/server/container/shared/classes/main"/>
+    <property name="build.trustedcaller.module"        value="${src.root.dir}/server/security/build/main/classes"/>
+    <property name="build.webapp"        value="${build.root.dir}/server/container/dem"/>
+    <property name="build.gendest"       value="${build.webapp}/genclasses"/>
+    <property name="build.metainf"       value="${build.webapp}/META-INF"/>
+    <property name="build.webinf"        value="${build.webapp}/WEB-INF"/>
+    <property name="build.metainf"       value="${build.webapp}/META-INF"/>
+    <property name="build.webconf"       value="${build.webinf}/conf"/>
+    <property name="build.weblib"        value="${build.webinf}/lib"/>
+    <property name="build.dest"          value="${build.webinf}/classes"/>
+    <property name="build.test.dest"     value="${build.webinf}/testclasses"/>
+    <property name="build.webconf"       value="${build.webinf}/conf"/>
+    <property name="services.enrollment.dir" value="com/bluejungle/destiny/services/enrollment"/>
+    <property name="web.dem.dir"         value="com/bluejungle/destiny/container/dem"/>
+    <property name="services.secure.dir" value="com/bluejungle/destiny/services/secure_session" />
+    <property name="pf.hib.dir"          value="${src.root.dir}/server/pf/src/hibernate" />
+    <property name="root.etc.dir" value="${nlbuildroot}/src/etc"/>
+
+	<property file="${nlbuildroot}/src/build-scripts/etc/build.properties" />
+
+	<path id="compile.dem.classpath">
+        <path refid="compile.classpath"/>
+        <pathelement path="${build.root.dir}/common-domain.jar"/>
+        <pathelement path="${build.root.dir}/common-framework.jar"/>
+        <pathelement path="${build.root.dir}/common-dictionary.jar"/>
+        <pathelement path="${build.root.dir}/inquiry-manager-shared.jar"/>
+        <pathelement path="${build.root.dir}/management-types.jar"/>
+        <pathelement path="${build.root.dir}/secure-session.jar"/>
+        <pathelement path="${build.root.dir}/server-base.jar"/>
+        <pathelement path="${build.root.dir}/server-framework.jar"/>
+        <pathelement path="${build.root.dir}/server-datasource.jar"/>
+        <pathelement path="${build.root.dir}/server-dictionary.jar"/>
+        <pathelement path="${build.root.dir}/server-dcsf.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-applicationusers.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-enrollment.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-types.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-utils.jar"/>
+        <pathelement path="${build.root.dir}/server-pf.jar"/>
+        <pathelement path="${postgres.jdbc}"/>
+        <pathelement path="${oracle.jdbc}"/>
+        <pathelement path="${db2.jdbc}"/>
+        <pathelement path="${xlib_jar_dir}/jcifs-1.3.19.jar"/>
+        <pathelement path="${sqlserver.jdbc}"/>
+        <pathelement path="${xlib_jar_dir}/jtds-1.2.2.jar"/>
+        <pathelement path="${xlib_jar_dir}/msal4j-1.12.0.jar"/>
+        <pathelement path="${build.dest}"/>
+        <pathelement path="${build.gendest}"/>
+        <fileset dir="${build.root.dir}/dependencies">
+            <include name="**/config-client*.jar"/>
+            <include name="**/log-manager*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="compile.dem.test.classpath">
+        <path refid="compile.dem.classpath"/>
+        <pathelement path="${xlib_jar_dir}/junit-4.3.jar"/>
+        <pathelement path="${build.test.dest}"/>
+        <pathelement path="${xlib_jar_dir}/ldap.jar"/>
+        <pathelement path="${xlib_jar_dir}/dom4j-2.1.3.jar"/>
+        <pathelement path="${xlib_jar_dir}/odmg-3.0.jar"/>
+        <pathelement path="${xlib_jar_dir}/cglib-full-2.0.2.jar"/>
+        <pathelement path="${xlib_jar_dir}/jta.jar"/>
+        <pathelement path="${xlib_jar_dir}/commons-collections-3.2.2.jar"/>
+        <pathelement path="${xlib_jar_dir}/mockobjects-core-0.09.jar"/>
+        <pathelement path="${xlib_jar_dir}/mockobjects-jdk1.4-j2ee1.3-0.09.jar"/>
+        <pathelement path="${build.root.dir}/server-dcsf-test.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-services.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-tests.jar"/>
+    </path>
+
+    <target name="build" depends="setup-war"/>
+
+    <target name="pre-build" description="Prepares required directory">
+        <mkdir dir="${build.dest}"/>
+        <mkdir dir="${build.test.dest}"/>
+        <mkdir dir="${build.gendest}"/>
+    </target>
+
+    <target name="compile" depends="pre-build" description="builds the source code">
+        <javac srcdir="${java.main.src.dir}" destdir="${build.dest}" debug="${compile.debug}" verbose="${compile.verbose}" source="${compile.source}" target="${compile.target}" bootclasspath="${compile.bootclasspath}" includeantruntime="false">
+            <classpath refid="compile.dem.classpath"/>
+        </javac>
+        <!--    <javac srcdir="${java.test.src.dir}" destdir="${build.test.dest}" debug="${compile.debug}" verbose="${compile.verbose}">
+            <classpath refid="compile.dem.test.classpath"/>
+        </javac> -->
+    </target>
+
+    <target name="jar" depends="compile" description="Prepares the jar files">
+    </target>
+
+    <target name="setup-datasources">
+        <mkdir dir="${build.weblib}"/>
+        <mkdir dir="${build.weblib}"/>
+        <copy toDir="${build.weblib}" failonerror="true">
+            <fileset refid="hibernate.lib"/>
+        </copy>
+        <!-- does hibernate need cglib-full or can we use nodep??? -->
+        <copy file="${xlib_jar_dir}/cglib-nodep-2.2.2.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/hibernate2.jar" todir="${build.weblib}" failonerror="true"/>
+    </target>
+
+    <target name="setup-webapp" depends="jar, setup-datasources" description="Sets up the web app files">
+        <copy todir="${build.webinf}/services">
+            <fileset dir="${gen.dir}/apps/dem/services" includes="**"/>
+        </copy>
+        <copy todir="${build.webapp}/WEB-INF/modules" failonerror="true" flatten="true">
+            <fileset dir="${xlib_jar_dir}">
+                <include name="addressing-1.8.0.mar"/>
+                <include name="axis2-jaxws-mar-1.8.0.mar"/>
+                <include name="mex-1.8.0.mar"/>
+                <include name="mtompolicy-1.8.0.mar"/>
+                <include name="ping-1.8.0.mar"/>
+                <include name="scripting-1.8.0.mar"/>
+                <include name="soapmonitor-1.8.0.mar"/>
+            </fileset>
+            <fileset dir="${build.root.dir}">
+                <include name="authentication.mar"/>
+                <include name="certificate-checker.mar"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.weblib}" failonerror="true" flatten="true">
+            <fileset dir="${build.root.dir}">
+                <include name="app-framework.jar"/>
+                <include name="common-framework.jar"/>
+                <include name="crypt.jar"/>
+                <include name="common-framework-types.jar"/>
+                <include name="common-dictionary.jar"/>
+                <include name="common-domain.jar"/>
+                <include name="common-pf.jar"/>
+                <include name="dcsf-types.jar"/>
+                <include name="enrollment-service.jar"/>
+                <include name="inquiry-manager-shared.jar"/>
+                <include name="server-shared-pf.jar" />
+                <include name="server-pf.jar" />
+                <include name="common-pf.jar" />
+                <include name="server-dictionary.jar" />
+                <include name="common-dictionary.jar" />
+                <include name="management-types.jar" />
+                <include name="policy-services.jar" />
+                <include name="policy-types.jar" />
+                <include name="secure-session.jar"/>
+                <include name="server-axis-security.jar"/>
+                <include name="server-datasource.jar"/>
+                <include name="server-dcsf.jar"/>
+                <include name="server-dictionary.jar"/>
+                <include name="server-framework.jar"/>
+                <include name="server-pf.jar"/>
+                <include name="secure-session-types.jar" />
+                <include name="server-shared-applicationusers.jar"/>
+                <include name="server-shared-delegation.jar"/>
+                <include name="server-shared-enrollment.jar"/>
+                <include name="server-shared-pf.jar"/>
+                <include name="server-shared-types.jar" />
+                <include name="server-shared-services.jar" />
+                <include name="server-shared-services-impl.jar" />
+				<include name="server-shared-utils.jar" />
+                <include name="common-version-impl.jar"/>
+                <include name="version.jar"/>
+                
+				<include name="dependencies/config-client*.jar"/>
+				<include name="dependencies/log-manager*.jar"/>
+            </fileset>
+            <resources refid="axis.jars"/>
+            <fileset refid="xerces.jars"/>
+            <fileset refid="hibernate.lib"/>
+            <fileset refid="jackson.jars"/>
+        </copy>
+
+        <!-- Included by hibernate, but this doesn't play nice with asm-1.0.2. cglib-nodep works
+             fine. Do we even need cglib-full?? -->
+        <delete file="${build.weblib}/cglib-full-2.0.2.jar"/>
+        
+        <copy file="${build.root.dir}/server-axis-security.jar" todir="${build.weblib}" failonerror="true"/>
+        
+        <copy file="${xlib_jar_dir}/activation-1.1.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/sharepoint-services.jar" todir="${build.weblib}" failonerror="true"/>
+		<copy file="${xlib_jar_dir}/commons-discovery-0.5.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/httpclient-4.5.13.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/msal4j-1.12.0.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/asm-1.0.2.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/gson-2.9.0.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/commons-codec-1.15.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/commons-lang3-3.11.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/json-smart-2.4.8.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/mail-1.4.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/nimbus-jose-jwt-8.14.1.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/content-type-2.1.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/oauth2-oidc-sdk-7.4.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy file="${xlib_jar_dir}/sharepoint-services.jar" todir="${build.weblib}" failonerror="true"/>
+        
+        <!-- Logging and logging config files -->
+        <copy file="${xlib_jar_dir}/jcl-over-slf4j-1.7.28.jar" todir="${build.weblib}" failonerror="true"/>
+        <copy todir="${build.weblib}" failonerror="true" flatten="true">
+            <fileset dir="${xlib_jar_dir}/dependencies">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        
+        <copy file="${root.etc.dir}/log4j2-template.xml" tofile="${build.webinf}/log4j2.xml" failonerror="true"/>
+        <replace file="${build.webinf}/log4j2.xml">
+            <replacefilter token="@@appname@@" value="enrollment"/>
+        </replace>
+        
+        <copy file="${etc.src.dir}/web.xml" todir="${build.webinf}" failonerror="true"/>
+        <copy file="${etc.src.dir}/axis2.xml" todir="${build.webinf}/conf" failonerror="true"/>
+        <copy file="${etc.src.dir}/index.html" todir="${build.webapp}" failonerror="true"/>
+
+        <!-- Copy the JLDAP jar -->
+        <copy file="${xlib_jar_dir}/ldap.jar" todir="${build.weblib}" failonerror="true"/>
+
+        <!-- Copy hibernate files -->
+        <copy file="${server.base.dir}/resource/main/common.repository.properties" todir="${build.webconf}" failonerror="true"/>
+        <copy file="${hibernate.src.dir}/dictionary.repository.xml" todir="${build.webconf}" failonerror="true"/>
+        <copy file="${hibernate.src.dir}/activity.repository.xml" todir="${build.webconf}" failonerror="true"/>
+        <copy file="${hibernate.src.dir}/policyframework.repository.xml" todir="${build.webconf}" failonerror="true"/>
+        <copy file="${hibernate.src.dir}/management.repository.xml" todir="${build.webconf}" failonerror="true" />
+
+        <!-- PQL parsing -->
+        <copy file="${antlr.jar}" todir="${build.weblib}" failonerror="true"/>
+
+        <copy file="${xlib_jar_dir}/ehcache-2.10.9.2.jar" todir="${build.weblib}" failonerror="true"/>
+        
+        <!-- For sharepoint enrollment -->
+        <copy file="${xlib_jar_dir}/jcifs-1.3.19.jar" todir="${build.weblib}" failonerror="true"/>
+        	
+        <!-- Copy empty axis config file -->
+        <copy file="${wsdd.template.dir}/server-config.wsdd" todir="${build.webinf}" failonerror="true"/>
+
+    </target>
+
+    <target name="wsdl-compile">
+        <ant dir="${src.wsdl.dir}" target="wsdl-compile" inheritrefs="true"/>
+    </target>
+
+    <target name="wsdl-generate">
+        <ant dir="${src.wsdl.dir}" target="wsdl-generate" inheritrefs="true"/>
+    </target>
+
+    <target name="wsdl-jar">
+        <ant dir="${src.wsdl.dir}" target="wsdl-jar" inheritrefs="true"/>
+    </target>
+
+    <target name="setup-war" depends="setup-webapp">
+        <war destfile="${war.dir}/dem.war" basedir="${build.webapp}" webxml="${build.webinf}/web.xml" excludes="genclasses/**/*.*, WEB-INF/testclasses/**/*.*"/>
+    </target>
+
+    <target name="doc"/>
+
+</project>

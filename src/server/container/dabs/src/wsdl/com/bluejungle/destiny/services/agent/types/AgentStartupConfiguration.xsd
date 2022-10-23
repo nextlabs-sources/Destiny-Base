@@ -1,0 +1,46 @@
+<xs:schema 	targetNamespace="http://bluejungle.com/destiny/services/agent/types" 
+			xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+			xmlns:types="http://bluejungle.com/destiny/services/agent/types"
+			xmlns:policyTypes="http://bluejungle.com/destiny/services/policy/types"
+			xmlns:mgmttypes="http://bluejungle.com/destiny/services/management/types"
+			xmlns:common="http://bluejungle.com/destiny/framework/types">
+
+	<xs:import namespace="http://bluejungle.com/destiny/framework/types" 
+			   schemaLocation="../../../../../../../../../../../common/framework/src/xsd/com/bluejungle/destiny/framework/types/BasicTypes.xsd"/>
+
+	<xs:import namespace="http://bluejungle.com/destiny/services/management/types" 
+			   schemaLocation="../../../../../../../../../dms/src/wsdl/com/bluejungle/destiny/services/management/types/CommProfile.xsd"/>
+
+	<xs:import namespace="http://bluejungle.com/destiny/services/management/types" 
+			   schemaLocation="../../../../../../../../../dms/src/wsdl/com/bluejungle/destiny/services/management/types/AgentProfile.xsd"/>
+
+	<xs:complexType name="AgentStartupConfiguration">
+		<xs:sequence>
+			<xs:element name="id" type="common:ID" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="commProfile"	type="mgmttypes:CommProfileDTO" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="agentProfile"	type="mgmttypes:AgentProfileDTO" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="registrationId" type="common:ID" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="attachments" type="types:AgentAttachments" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+    <xs:complexType name="AgentAttachments">
+        <xs:sequence>
+            <xs:element name="Attachment" type="types:AgentAttachment" nillable="false" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AgentAttachment">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="id" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>
+
+
+
+
+
+

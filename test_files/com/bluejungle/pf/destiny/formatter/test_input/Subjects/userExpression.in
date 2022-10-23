@@ -1,0 +1,1 @@
+principal user_expr = user.name = "Bob" and user.mail_domain="nextlabs.com;bluejungle.com"

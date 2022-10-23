@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="logging.pattern">%d %-5p [%t] %c{1.}: %m%n</Property>
+		<Property name="file.prefix">${sys:dpc.install.home}/debuglogs/${sys:nextlabs.dpc.hostname}/dpc</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%t] %c{1.}: %enc{%m}{CRLF}%n"/>
+        </Console>
+        <RollingRandomAccessFile name="RootLogFile"
+                                 fileName="${file.prefix}.log"
+                                 filePattern="${file.prefix}-%i.log.gz"
+                                 immediateFlush="false"
+                                 append="false">
+            <PatternLayout charset="UTF-8">
+                <Pattern>%d %-5p [%t] %c{1.}: %enc{%m}{CRLF}%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="2 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO" includeLocation="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RootLogFile"/>
+        </Root>
+        <AsyncLogger name="com.bluejungle" level="INFO" additivity="false" includeLocation="false">
+            <AppenderRef ref="RootLogFile"/>
+        </AsyncLogger>
+        <AsyncLogger name="com.nextlabs" level="INFO" additivity="false" includeLocation="false">
+            <AppenderRef ref="RootLogFile"/>
+        </AsyncLogger>
+    </Loggers>
+</Configuration>

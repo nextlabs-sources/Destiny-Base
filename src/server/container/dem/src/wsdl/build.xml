@@ -1,0 +1,78 @@
+<project name="dem_wsdl_build" default="build">
+	
+	<property name="wsdl.src.dir"      value="${basedir}"/>
+	<property name="build.dest"   value="${build.root.dir}/server/container/dem/WEB-INF/classes"/>
+	<property name="build.gendest" value="${build.root.dir}/server/container/dem/genclasses"/>
+	<property name="services.enrollment.dir" value="com/bluejungle/destiny/services/enrollment"/>
+    <property name="server.src.dir" value="${src.dir}/../.." /> 
+    <property name="policyedit.hib.dir" value="${server.src.dir}/pf/src/hibernate" /> 
+
+	<path id="compile.demwsdl.classpath">
+		<path refid="compile.classpath"/>
+	    <pathelement path="${build.dest}"/>
+	    <pathelement path="${build.gendest}"/>
+	</path>
+    
+    <target name="build">
+    </target>
+	
+	<target name="pre-build">
+		<mkdir dir="${build.dest}"/>
+		<mkdir dir="${build.gendest}"/>
+	</target>
+	
+	
+	<target name="wsdl-generate" depends="pre-build" description="Generates code from WSDL">
+		<!-- Takes care of EnrollmentService -->
+        <!--
+            clientApplication="EnrollmentMgr"
+            userAuthRequired="true"
+            implementationClassName="com.bluejungle.destiny.container.dem.DEMEnrollmentServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="Enrollment"
+        -->
+		<delete dir="${gen.dir}/resources" failonerror="false"/>
+		<java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+			<classpath refid="compile.classpath"/>
+			<arg value="--all-ports"/>
+			<arg value="--databinding-method"/>
+			<arg value="adb"/>
+			<arg value="--generate-all"/>
+			<arg value="--output"/>
+			<arg value="${gen.dir}"/>
+			<arg value="--package"/>
+			<arg value="com.bluejungle.destiny.services.enrollment"/>
+			<arg value="--server-side"/>
+			<arg value="--serverside-interface"/>
+			<arg value="--service-description"/>
+			<arg value="--unwrap-params"/>
+			<arg value="-sin"/>
+			<arg value="EnrollmentIF"/>
+			<arg value="-uri"/>
+			<arg value="${wsdl.src.dir}/${services.enrollment.dir}/EnrollmentService.wsdl"/>
+		</java>
+		<replaceregexp file="${gen.dir}/resources/services.xml"
+					   match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+					   replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.dem.DEMEnrollmentServiceImpl&lt;/parameter&gt;"
+					   byline="true"/>
+		<move todir="${gen.dir}/apps/dem/services/EnrollmentService/META-INF/">
+			<fileset dir="${gen.dir}/resources/"/>
+		</move>
+	</target>
+	
+	<target name="wsdl-compile" description="Compile generated wsdl code">
+		<javac srcdir="${gen.dir}/src" destdir="${build.gendest}" debug="${compile.debug}" verbose="${compile.verbose}" source="${compile.source}" target="${compile.target}" bootclasspath="${compile.bootclasspath}" includeantruntime="false">
+			<classpath refid="compile.classpath"/>
+			<include name="${services.enrollment.dir}/**/*.java"/>
+		</javac>
+	</target>
+	
+	<target name="wsdl-jar" description="Packages compiled WSDL code">
+		<jar destfile="${build.root.dir}/enrollment-service.jar">
+			<fileset dir="${build.gendest}">
+				<include name="**/*.class"/>
+				<exclude name="**/common/**/*.class"/>
+			</fileset>
+		</jar>		
+	</target>
+</project>

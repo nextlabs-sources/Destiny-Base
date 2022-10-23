@@ -1,0 +1,27 @@
+allprojects {
+    buildscript {
+        repositories {
+            maven {
+                url "${artifactoryContextUrl}/libs-release"
+                credentials {
+                    username = artifactoryUser
+                    password = artifactoryPassword
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url artifactoryContextUrl + (version.endsWith("SNAPSHOT") ? "/libs-snapshot" : "/libs-release")
+            credentials {
+                username = artifactoryUser
+                password = artifactoryPassword
+            }
+        }
+   
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+}

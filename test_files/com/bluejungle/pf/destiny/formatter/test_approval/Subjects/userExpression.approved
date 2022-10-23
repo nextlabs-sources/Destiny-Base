@@ -1,0 +1,28 @@
+ID null COMPONENT user_expr = (user.name = "Bob" AND user.mail_domain = "nextlabs.com;bluejungle.com")
+
+
+================ Re-parsed PQL =================
+
+ANNOTATED_DEFINITION: ''
+    ANNOTATIONS: ''
+        IDNUMBER: 'null'
+        "status": 'empty'
+        CREATOR_ATTRIBUTE: 'empty'
+        ACCESS_CONTROL_POLICY: ''
+            "empty": ''
+            "empty": ''
+            "empty": ''
+    "component": 'COMPONENT'
+        IDENTIFIER: 'user_expr'
+        COMPONENT_EXPR: ''
+            "and": ''
+                RELATION_OP: '='
+                    DOT_EXPRESSION: ''
+                        IDENTIFIER: 'user'
+                        IDENTIFIER: 'name'
+                    QUOTED_STRING: 'Bob'
+                RELATION_OP: '='
+                    DOT_EXPRESSION: ''
+                        IDENTIFIER: 'user'
+                        IDENTIFIER: 'mail_domain'
+                    QUOTED_STRING: 'nextlabs.com;bluejungle.com'

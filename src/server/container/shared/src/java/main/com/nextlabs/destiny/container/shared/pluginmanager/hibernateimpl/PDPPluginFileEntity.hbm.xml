@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+"-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping package="com.nextlabs.destiny.container.shared.pluginmanager.hibernateimpl">
+    <class name="PDPPluginFileEntity" table="PDP_PLUGIN_FILES">
+        <id name="id" column="ID">
+            <generator class="native"/>
+        </id>
+        <many-to-one
+            name="plugin"
+            class="PDPPluginEntity"
+            column="plugin_id"
+            not-null="true">
+        </many-to-one>
+        <property name="type">
+            <column name ="type" not-null="true" length="15"/>
+        </property>
+        <property name="name">
+            <column name="name" length="260" not-null="true"/>
+        </property>
+        <property name="content" type="binary">
+            <column name="content" sql-type="varbinary(max)" not-null="true"/>
+        </property>
+        <property name="modifiedDate" column="modified_date" type="com.bluejungle.framework.datastore.hibernate.usertypes.DateToLongUserType" not-null="true" />
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,70 @@
+buildscript {
+    repositories {
+        maven {
+            url "${artifactoryContextUrl}/libs-release"
+            credentials {
+                username = artifactoryUser
+                password = artifactoryPassword
+            }
+        }
+    }
+}
+
+repositories {
+    maven {
+        url artifactoryContextUrl + (version.endsWith("SNAPSHOT") ? "/libs-snapshot" : "/libs-release")
+        credentials {
+            username = artifactoryUser
+            password = artifactoryPassword
+        }
+    }
+}
+
+apply plugin: 'java'
+
+dependencies {
+    implementation "com.nextlabs.common:config-client:${version}"
+    implementation "com.nextlabs.common:log-manager:${version}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4j2Version}"
+    implementation "org.apache.logging.log4j:log4j-jcl:${log4j2Version}"
+    implementation "org.apache.logging.log4j:log4j-web:${log4j2Version}"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4j2Version}"
+}
+
+def internalDependencies = [
+        "config-client*.jar",
+        "log-manager*.jar"
+]
+
+task copyInternalDependencies {
+    doLast {
+        copy {
+            from(sourceSets.main.runtimeClasspath) {
+                include internalDependencies
+            }
+            into internalDependencyLocation
+        }
+        println("Copied internal dependencies to " + internalDependencyLocation)
+    }
+    onlyIf {
+        project.hasProperty('internalDependencyLocation')
+    }
+}
+
+task copyExternalDependencies() {
+    doLast {
+        copy {
+            from(sourceSets.main.runtimeClasspath) {
+                exclude internalDependencies
+            }
+            into externalDependencyLocation
+        }
+        println("Copied external dependencies to " + externalDependencyLocation)
+    }
+    onlyIf {
+        project.hasProperty('externalDependencyLocation')
+    }
+}
+
+copyInternalDependencies.finalizedBy(copyExternalDependencies)
+build.finalizedBy(copyInternalDependencies)

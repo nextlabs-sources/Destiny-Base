@@ -1,0 +1,48 @@
+policy identical_with_condition1
+    FOR * ON * BY *
+    WHERE CURRENT_TIME.DATE > 12345678
+    DO DENY
+
+policy identical_with_condition2
+    FOR * ON * BY *
+    WHERE CURRENT_TIME.day_in_month > 12345678
+    DO DENY
+
+policy identical_with_condition1a
+    FOR * ON * BY *
+    WHERE environment.CURRENT_TIME.DATE > 12345678
+    DO DENY
+
+policy identical_with_condition2a
+    FOR * ON * BY *
+    WHERE ENVIRONMENT.CURRENT_TIME.day_in_month > 12345678
+    DO DENY
+
+// Handle both old and newer time formats. In older releases we didn't have leading 0s on
+// time of day. Newer releases do. Newer releases also have an optional time zone
+policy time_parse_identity
+    FOR * ON * BY *
+    WHERE environment.current_time.identity = "Jan 22, 2011 7:21:45 AM" OR
+          environment.current_time.identity = "Jan 22, 2011 07:21:45 PM" OR
+          environment.current_time.identity = "Jan 22, 2011 07:21:45 PM Asia/Shanghai"
+    DO DENY
+
+policy time_parse_year
+    FOR * ON * BY *
+    WHERE environment.current_time.year = "2021" or environment.current_time.year = "1932 America/Los_Angeles"
+    DO DENY
+
+// Upper and lower-case days of week are accepted
+policy time_parse_weekday
+    FOR * ON * BY *
+    WHERE environment.current_time.weekday = "Wednesday" or environment.current_time.weekday = "Friday Asia/Singapore" OR
+          environment.current_time.weekday = "tuesday" or environment.current_time.weekday = "monday Asia/Singapore"
+    DO DENY
+
+// See comment for time_parse_identity
+policy time_parse_time
+    FOR * ON * BY *
+    WHERE environment.current_time.time = "07:31:22 AM" or
+          environment.current_time.time = "9:16:41 PM" or
+          environment.current_time.time = "09:16:41 PM Europe/London"
+    DO DENY

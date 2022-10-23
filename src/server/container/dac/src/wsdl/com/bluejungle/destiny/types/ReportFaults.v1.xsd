@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema  targetNamespace="http://bluejungle.com/destiny/types/report/v1" 
+			xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+			xmlns:types="http://bluejungle.com/destiny/types/report/v1">
+	
+	<xs:element name="InvalidArgumentFault" type="types:InvalidArgumentFault"/>
+	
+	<xs:element name="ExecutionFault" type="types:ExecutionFault"/>
+	<!-- Some report arguments are incorred or inconsistent -->
+	<xs:complexType name="InvalidArgumentFault"/>
+	<!-- An error occured when executing the report -->
+	<xs:complexType name="ExecutionFault"/>
+</xs:schema>

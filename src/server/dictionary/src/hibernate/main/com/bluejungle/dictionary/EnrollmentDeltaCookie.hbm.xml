@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 2.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping package="com.bluejungle.dictionary">
+    <class name="EnrollmentDeltaCookie" table="DICT_ENROLLMENT_DELTA" dynamic-update="false">
+        <id name="id" column="ID" access="field">
+            <generator class="native"/>
+        </id>
+        
+        <many-to-one name="enrollment" class="Enrollment" column="enrollment_id" outer-join="true" access="field" not-null="true"/>
+
+        <property name="deltaType" column="delta_type" length="64" access="field" type="string" not-null="true"/>
+
+        <property name="cookie" type="com.bluejungle.framework.datastore.hibernate.usertypes.StreamableUserType">
+            <column name="cookie" length="2147483647" not-null="true"/>
+        </property>
+    </class>
+</hibernate-mapping>

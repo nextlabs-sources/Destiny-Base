@@ -1,0 +1,545 @@
+<?xml version="1.0" ?>
+<!DOCTYPE project [
+<!ENTITY classpaths SYSTEM "build-scripts/etc/classpath.skel">
+<!ENTITY taskdefs SYSTEM "build-scripts/etc/build-tasks.skel">
+]>
+
+<project name="Destiny" default="build-all" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <tstamp>
+        <format property="TODAY" pattern="yyyy-MM-dd"  locale="en,UK" />
+    </tstamp>
+    <property environment="env"/>
+    <echo message="NL External Dir : ${env.NLEXTERNALDIR2}" />
+
+    <!-- Notes: nlbuildroot must be defined before build-scripts/etc/build.properties and
+         build-scripts/etc/build_external.properties
+    -->
+    <property name="nlbuildroot" location="${basedir}/.." />
+
+    <property file="${nlbuildroot}/scripts/build.properties" />
+    <property file="${nlbuildroot}/src/build-scripts/etc/build.properties" />
+    <property file="${nlbuildroot}/src/build-scripts/etc/build_external.properties"/>
+
+    <!-- Need to set this while build.xml lived in this directory rather that top directory -->
+    <property name="ivy.dep.file" value="../ivy.xml" />
+    <property name="package_chef_dir" value="${build.root.dir}/cc_chef" />
+    <property name="cc_chef_linux_dir" value="${package_chef_dir}/cc_linux" />
+    <property name="cc_chef_win_dir" value="${package_chef_dir}/cc_win" />
+	<property name="package_linux_dir" value="${build.root.dir}/package_linux" />
+
+    &classpaths;
+	&taskdefs;
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${xlib_jar_dir}/ant-contrib.jar"/>
+        </classpath>
+    </taskdef>
+
+    <!-- FIX ME - Property should be placed in properties file eventually when top level build file moves -->
+    <property name="common.build.script.dir" value="${nlbuildroot}/build_scripts" />
+    <mkdir dir="${common.build.script.dir}" />
+    <import file="${common.build.script.dir}/version_build.xml" />
+    <import file="${common.build.script.dir}/ivy_build.xml" />
+
+    <!-- New build pattern. Paths to be built-->
+    <path id="build-paths">
+        <pathelement path="${src.root.dir}/common/version" />
+        <pathelement path="${src.root.dir}/common/resources" />
+        <pathelement path="${src.root.dir}/common/framework" />
+        <pathelement path="${src.root.dir}/server/base" />
+        <pathelement path="${src.root.dir}/server/framework" />
+        <pathelement path="${src.root.dir}/server/container/base" />
+        <pathelement path="${src.root.dir}/server/security" />
+        <pathelement path="${src.root.dir}/common/domain" />
+        <pathelement path="${src.root.dir}/common/oil" />
+        <pathelement path="${src.root.dir}/client/agent/ipc" />
+        <pathelement path="${src.root.dir}/server/directory" />
+        <pathelement path="${src.root.dir}/common/pf" />
+        <pathelement path="${src.root.dir}/common/dictionary" />
+        <pathelement path="${src.root.dir}/server/dictionary" /> 
+    </path>
+
+    <!-- New build pattern. Build all new build modules-->
+    <target name="new_build">
+        <subant buildpathref="build-paths" verbose="true" inheritrefs="false" inheritall="false">
+            <property name="build.root.dir" value="${build.root.dir}" />
+            <target name="build" />
+            <target name="publish_local" />
+        </subant>	  
+    </target>
+
+    <target name="build-all" 
+            description="Build all components" 
+            depends="create_version_jar, new_build">	    
+        <ant dir="build-scripts/project" target="build" inheritRefs="true"/>
+        <antcall target="package" />
+    </target>
+
+    <!-- New build pattern. Clean all new build modules-->
+    <target name="new_clean">
+        <subant buildpathref="build-paths" inheritall="false" inheritrefs="false" verbose="false">
+            <property name="build.root.dir" value="${build.root.dir}" />
+            <target name="clean" />
+        </subant>
+    </target>
+
+    <target name="clean-all" depends="new_clean" description="Cleans the entire project">
+        <ant dir="build-scripts/project" target="clean" inheritRefs="true"/>
+    </target>
+
+    <target name="rebuild-all" description="Cleans entire project followed by a full build" depends="clean-all, build-all"/>
+    
+    <target name="rebuild-all-java" description="Cleans entire java build followed by a full build" depends="clean-all-java, build-all"/>
+    <target name="rebuild-integration" description="Cleans entire project and builds for the purposes of integration test" depends="clean-all, build-all">
+        <ant dir="build-scripts/project" target="build-native" inheritRefs="true">
+            <property name="enforcers.dir" value="${enforcers.dir}" />
+        </ant>	
+        
+        <!-- temp patch for the build system, fix bugs 6326,6344 -->
+        <copy 
+            file="${build.root.dir}/platform/win32/release/bin/customAttrSetter.exe"
+            todir="${build.root.dir}/tools/setattribute/" 
+            overwrite = "true"
+            />
+    </target>
+
+    <target name="clean-all-java" depends="new_clean" description="Cleans the entire java build but leaves the C++ projects">
+        <ant dir="build-scripts/tasks" target="build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="clean-java" inheritRefs="true"/>
+    </target>
+
+    <target name="checkStyleAndTest-all" depends="rebuild-all">
+        <ant dir="build-scripts/project" target="check-style" inheritRefs="true"/>		
+        <ant dir="build-scripts/project" target="all-javadocs" inheritRefs="true"/>		
+        <ant dir="build-scripts/project" target="test-all" inheritRefs="true"/>
+    </target>
+    
+    <target name="buildAndTestAll">
+        <ant dir="build-scripts/tasks" target="build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="stop-tomcat-servers" inheritRefs="true"/>			
+        <antcall target="clean-all" inheritRefs="true"/>
+        <antcall target="create_version_jar" inheritRefs="true"/>
+        <antcall target="new_build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="build-native" inheritRefs="true"/>		
+        
+        <antcall target="package" />
+        <ant dir="build-scripts/project" target="build-installers" inheritRefs="true"/>	
+        <ant dir="build-scripts/project" target="rebuild-env" inheritRefs="true"/>
+        <antcall target="test-all" inheritRefs="true"/>
+    </target>
+
+    <target name="buildOnly">
+        <antcall target="clean-all" inheritRefs="true"/>
+        <antcall target="run-gradle" inheritRefs="true"/>
+        <antcall target="create_version_jar" inheritRefs="true"/>
+        <antcall target="new_build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="build" inheritRefs="true"/>
+        <antcall target="package" />
+        <antcall target="set-up-misc-installer-deps"/>
+        <antcall target="set-up-openaz"/>
+        <antcall target="set-up-linux"/>
+   </target>
+    
+    <target name="buildOnlyCCConsole">
+        <ant dir="build-scripts/tasks" target="build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="stop-tomcat-servers" inheritRefs="true"/>
+        <antcall target="clean-all" inheritRefs="true"/>
+        <antcall target="create_version_jar" inheritRefs="true"/>
+        <antcall target="new_build" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="build-cc-Console" inheritRefs="true"/>
+    </target>
+
+    <target name="make-dpc-directories">
+        <mkdir dir="${param.dpc.root.dir}"/>
+        <mkdir dir="${param.dpc.root.dir}/certificates"/>
+        <mkdir dir="${param.dpc.root.dir}/config_setup"/>
+        <mkdir dir="${param.dpc.root.dir}/dpc"/>
+        <mkdir dir="${param.dpc.root.dir}/dpc/config"/>
+        <mkdir dir="${param.dpc.root.dir}/dpc/config/security"/>
+        <mkdir dir="${param.dpc.root.dir}/dpc/logs"/>
+        <mkdir dir="${param.dpc.root.dir}/logs"/>
+    </target>
+        
+    <target name="set-up-embeddedpdp">
+        <mkdir dir="${build.root.dir}/nextlabs/embeddedpdp"/>
+        <mkdir dir="${build.root.dir}/nextlabs/embeddedpdp/config"/>
+        <mkdir dir="${build.root.dir}/nextlabs/embeddedpdp/config/security"/>
+        <mkdir dir="${build.root.dir}/nextlabs/embeddedpdp/lib"/>
+        <mkdir dir="${build.root.dir}/nextlabs/embeddedpdp/logs"/>
+
+        <copy todir="${build.root.dir}/nextlabs/embeddedpdp/lib">
+            <fileset dir ="${build.root.dir}/agent/lib">
+                <include name="activation-1.1.jar"/>
+                <include name="antlr-2.7.7.jar"/>
+                <include name="apache-mime4j-core-0.8.7.jar"/>
+                <include name="axiom-api-1.3.0.jar"/>
+                <include name="axiom-impl-1.3.0.jar"/>
+                <include name="axis2-adb-1.8.0.jar"/>
+                <include name="axis2-jaxws-1.8.0.jar"/>
+                <include name="axis2-kernel-1.8.0.jar"/>
+                <include name="axis2-transport-http-1.8.0.jar"/>
+                <include name="axis2-transport-local-1.8.0.jar"/>
+                <include name="castor-0.9.5.4.jar"/>
+                <include name="commons-codec-1.15.jar"/>
+                <include name="commons-io-2.11.0.jar"/>
+                <include name="commons-logging-1.2.jar"/> <!-- not needed because of slf4j? -->
+                <include name="disruptor-3.3.11.jar"/>
+                <include name="dnsjava.jar"/>
+                <include name="ehcache-2.10.9.2.jar"/>
+                <include name="httpcore-4.4.11.jar"/>
+                <include name="httpclient-4.5.13.jar"/>
+			    <include name="java-jwt-3.19.2.jar" />
+                <include name="log4j-api-2.18.0.jar"/>
+                <include name="log4j-core-2.18.0.jar"/>
+                <include name="log4j-slf4j-impl-2.18.0.jar"/>
+                <include name="mail-1.4.jar"/>
+                <include name="neethi-3.1.1.jar"/>
+                <include name="slf4j-api-1.7.28.jar"/>
+                <include name="slf4j-simple-1.7.28.jar"/>
+                <include name="woden-core-1.0M10.jar"/>
+                <include name="wsdl4j-1.6.3.jar"/>
+                <include name="xmlschema-core-2.2.5.jar"/>
+            </fileset>
+            <fileset refid="xerces.jars"/>
+        </copy>
+        
+        <copy file="${xlib_jar_dir}/dnsjava.jar" tofile="${build.root.dir}/nextlabs/embeddedpdp/lib/dnsjava.jar" preservelastmodified="true" overwrite="false"/>
+
+        <copy file="${src.root.dir}/client/agent/etc/embeddedpdp-pom.xml" tofile="${build.root.dir}/nextlabs/embeddedpdp/embeddedpdp-pom.xml"/>
+        
+        <jar manifest="${nlbuildroot}/src/etc/embeddedpdp.mf" destfile="${build.root.dir}/nextlabs/embeddedpdp/embeddedpdp.jar">
+            <zipfileset src="${build.root.dir}/agent/lib/agent-common.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/agent-controlmanager.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/agent-tools.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/agent-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/client-pf.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-domain.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-domain-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-framework.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-framework-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-oil.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-pf.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-version.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/common-version-impl.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/crypt.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/dabs-agent-services.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/dabs-common-services.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/deployment-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/log-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/management-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/policy-services.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/policy-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/server-base.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/server-shared-types.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/version.jar"/>
+            <zipfileset src="${build.root.dir}/agent/lib/version-types.jar"/>
+            
+            <zipfileset src="${build.root.dir}/agent-ipc/agent-ipc-stub.jar"/>
+
+            <zipfileset src="${build.root.dir}/nextlabs-oauth2-jwt.jar"/>
+        </jar>
+
+
+        <!-- files to support decryption -->
+        <copy file="${src.root.dir}/server/container/dpc/decrypt/embedded.decrypt.sh" tofile="${build.root.dir}/nextlabs/embeddedpdp/decrypt.sh"/>
+        <copy file="${src.root.dir}/server/container/dpc/decrypt/embedded.decrypt.bat" tofile="${build.root.dir}/nextlabs/embeddedpdp/decrypt.bat"/>
+        
+        <copy file="${build.root.dir}/nextlabs/embeddedpdp/embeddedpdp.jar" tofile="${build.root.dir}/nextlabs/embeddedpdp/decryptj/embeddedpdp.jar"/>
+        <copy todir="${build.root.dir}/nextlabs/embeddedpdp/decryptj">
+            <fileset dir="${xlib_jar_dir}">
+                <include name="activation-1.1.jar"/>
+                <include name="antlr-2.7.7.jar"/>
+                <include name="axiom-api-1.3.0.jar"/>
+                <include name="axis2-adb-1.8.0.jar"/>
+                <include name="castor-0.9.5.4.jar"/>
+                <include name="commons-discovery-0.2.jar"/>
+                <include name="commons-io-2.11.0.jar"/>
+                <include name="commons-logging-1.2.jar"/>
+                <include name="jaxrpc.jar"/>
+            </fileset>
+            <fileset refid="xerces.jars"/>
+        </copy>
+        
+        <copy todir="${build.root.dir}/nextlabs/embeddedpdp/config/security" file="${build.root.dir}/server-security/temp_agent-keystore.p12"/>
+    
+        <copy todir="${build.root.dir}/nextlabs/embeddedpdp/config">
+            <fileset dir="${build.root.dir}/config">
+                <include name="commprofile.xml"/>
+                <include name="agentprofile.xml"/>
+                <include name="config.dat"/>
+                <include name="mapping.xml"/>
+                <include name="pdp.properties"/>
+                <include name="xacmlpdpconfig.xml"/>
+            </fileset>
+        </copy>
+
+        <copy tofile="${build.root.dir}/nextlabs/embeddedpdp/config/log4j2.xml" file="${nlbuildroot}/src/etc/embeddedpdp-log4j2.xml"/>
+    </target>
+    
+    <target name="compile-openaz">
+        <ant dir="build-scripts/project" target="build-client-openaz-pep" inheritRefs="true"/>
+    </target>
+
+    <target name="set-up-misc-installer-deps">
+        <copy todir="${build.root.dir}">
+            <fileset dir="${src.root.dir}/server/container/dpc/decrypt/">
+                <include name="decrypt.bat"/>
+                <include name="decrypt.sh"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${build.root.dir}" file="${src.root.dir}/server/container/dpc/conf_setup/server.txt"/>
+        <copy todir="${build.root.dir}" file="${src.root.dir}/server/container/dpc/conf_setup/logging.txt"/>
+        <copy todir="${build.root.dir}" file="${src.root.dir}/server/container/dpc/etc/app.properties"/>
+        
+        <copy todir="${build.root.dir}" file="${src.root.dir}/etc/jboss-standalone.xml.txt"/>
+    </target>
+    
+    <target name="set-up-linux">
+        <mkdir dir="${build.root.dir}/linux"/>
+        <copy todir="${build.root.dir}/linux" overwrite="true" failonerror="false">
+            <fileset dir="${nlbuildroot}/src/etc/linux"/>
+        </copy>
+    </target>
+    
+    <target name="set-up-openaz" depends="compile-openaz, set-up-embeddedpdp">
+        <property name="openaz_dir" value="${build.root.dir}/nextlabs-openaz-pep" />
+        <property name="openaz_java_dir" value="${openaz_dir}/java" />
+        <property name="openaz_java_libs_dir" value="${openaz_java_dir}/libs" />
+        <property name="openaz_java_pom_dir" value="${openaz_java_dir}/pom" />
+        <property name="openaz_java_samples_dir" value="${openaz_java_dir}/sample_code" />
+        <property name="openaz_java_samples_config_dir" value="${openaz_java_dir}/sample_code/config" />
+        <property name="openaz_js_dir" value="${openaz_dir}/js" />
+
+        <!-- Create the required paths -->
+        <mkdir dir="${openaz_java_libs_dir}"/>
+        <mkdir dir="${openaz_java_samples_dir}"/>
+        <mkdir dir="${openaz_java_samples_config_dir}"/>
+        <mkdir dir="${openaz_js_dir}"/>
+
+        <!-- Copy the required class files -->
+        <copy todir="${openaz_java_samples_dir}" overwrite="true" failonerror="false">
+            <fileset dir="${nlbuildroot}/src/client/openaz/src/java/test/">
+                <include name="**/*.java"/>
+                <exclude name="**/EmbeddedSampleClient.java"/>
+            </fileset>
+        </copy>
+        
+        <!-- Copy docs -->
+        <copy todir="${openaz_java_dir}" overwrite="true" failonerror="false">
+            <fileset dir="${nlbuildroot}/src/client/openaz">
+                <include name="**/*.MD" />
+                <include name="**/*.html" />
+            </fileset>
+        </copy>
+
+        <copy file="${build.root.dir}/nextlabs/embeddedpdp/embeddedpdp.jar" todir="${openaz_java_libs_dir}" verbose="true" />
+
+        <copy file="${nlbuildroot}/src/client/openaz/src/java/test/resources/openaz-pep-rest.properties" todir="${openaz_java_samples_config_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/src/java/test/resources/openaz-pep-embedded.properties" todir="${openaz_java_samples_config_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/src/java/test/rest_request.bat" todir="${openaz_java_samples_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/src/java/test/rest_request.sh" todir="${openaz_java_samples_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/src/java/test/embedded_request.bat" todir="${openaz_java_samples_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/src/java/test/embedded_request.sh" todir="${openaz_java_samples_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- Copy the required jars. OpenAZ and embeddedpdp dependencies are mixed in here -->
+        <copy file="${xlib_jar_dir}/activation-1.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${antlr.jar}" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/apache-mime4j-core-0.8.7.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axiom-api-1.3.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axiom-dom-1.3.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axiom-impl-1.3.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axis2-adb-1.8.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axis2-jaxws-1.8.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axis2-kernel-1.8.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axis2-transport-http-1.8.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/axis2-transport-local-1.8.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/castor-0.9.5.4.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/commons-codec-1.15.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/commons-discovery-0.5.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/commons-io-2.11.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/commons-lang-2.6.jar" todir="${openaz_java_libs_dir}"  preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/commons-lang3-3.11.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/commons-logging-1.2.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/disruptor-3.3.11.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/dnsjava.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/ehcache-2.10.9.2.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${build.root.dir}/nextlabs/embeddedpdp/embeddedpdp.jar" todir="${openaz_java_libs_dir}" verbose="true" />
+        <copy file="${xlib_jar_dir}/geronimo-annotation_1.0_spec-1.1.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/geronimo-ws-metadata_2.0_spec-1.1.3.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/guava-31.1-jre.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/httpclient-4.5.13.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/httpcore-4.4.11.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/jcl-over-slf4j-1.7.28.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        
+        <copy todir="${openaz_java_libs_dir}" overwrite="true" failonerror="false">
+            <fileset refid="jackson.jars"/>
+        </copy>
+
+        <copy file="${xlib_jar_dir}/jaxb-api-2.3.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/jaxen-1.2.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/java-jwt-3.19.2.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/jsr311-api-1.1.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/log4j-api-2.18.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/log4j-core-2.18.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/log4j-slf4j-impl-2.18.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/mail-1.4.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/neethi-3.1.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${build.root.dir}/nextlabs-openaz-pep.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/openaz-pep-0.0.2-SNAPSHOT.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/openaz-xacml-0.0.2-SNAPSHOT.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/slf4j-api-1.7.28.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/slf4j-simple-1.7.28.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/spring-security-crypto-5.7.3.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/stax2-api-4.2.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/woden-core-1.0M10.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/wsdl4j-1.6.3.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/xercesImpl-2.12.1.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/xml-apis.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/xmlbeans-5.0.0.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${xlib_jar_dir}/xmlschema-core-2.2.5.jar" todir="${openaz_java_libs_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+
+        <!-- Copy files and their pom files to pom folder -->
+        <copy file="${build.root.dir}/nextlabs/embeddedpdp/embeddedpdp.jar" todir="${openaz_java_pom_dir}" verbose="true" />
+        <copy file="${nlbuildroot}/src/client/agent/etc/embeddedpdp-pom.xml" todir="${openaz_java_pom_dir}" verbose="true"/>
+        <copy file="${build.root.dir}/nextlabs-openaz-pep.jar" todir="${openaz_java_pom_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/etc/nextlabs-openaz-pom.xml" todir="${openaz_java_pom_dir}" verbose="true"/>
+        <copy file="${xlib_jar_dir}/openaz-pep-0.0.2-SNAPSHOT.jar" todir="${openaz_java_pom_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/etc/openaz-pep-pom.xml" todir="${openaz_java_pom_dir}" verbose="true"/>
+        <copy file="${xlib_jar_dir}/openaz-xacml-0.0.2-SNAPSHOT.jar" todir="${openaz_java_pom_dir}" preservelastmodified="true" overwrite="true" verbose="true" failonerror="true" />
+        <copy file="${nlbuildroot}/src/client/openaz/etc/openaz-xacml-pom.xml" todir="${openaz_java_pom_dir}" verbose="true"/>
+        
+        <!-- copy openaz-nodejs code -->
+        <copy todir="${openaz_js_dir}" overwrite="true" failonerror="false">
+            <fileset dir="${env.DESTINY_OPENAZ_NODEJS_SRC_TREE_ROOT}">
+                <exclude name="**/.git/**"/>
+                <exclude name="**/.gitignore"/>
+                <exclude name="**/test/**"/>
+            </fileset>
+        </copy>
+
+        <!-- put configuration files for on-prem -->
+        <move file="${openaz_java_samples_config_dir}/openaz-pep-embedded.properties" verbose="true" tofile="${openaz_java_samples_config_dir}/openaz-pep-embedded.properties"/>
+        <move file="${openaz_js_dir}/sample_code/config/openaz-pep-on-prem.json" verbose="true" tofile="${openaz_js_dir}/sample_code/config/openaz-pep-on-prem.json"/>
+
+        <echo message="INFO: Nextlabs-OpenAZ-PEP ZIP = ${build.root.dir}/Nextlabs-OpenAZ-PEP-${version_str}-${build_number}.zip"/>
+    </target>
+
+    <target name="installerOnly">
+        <antcall target="package" />
+        <ant dir="build-scripts/project" target="build-installers" inheritRefs="true"/>
+    </target>
+
+    <target name="cc-CI-Build" depends="buildAndTestAll">
+        <fail if="junit.fail" message="One or more unit tests have failed!" />
+    </target>
+
+    <target name="cc-Nightly-Build" depends="buildAndTestAll">
+    </target>
+
+    <target name="cc-test-integration">
+        <ant dir="build-scripts/project" target="test-integration-run" inheritRefs="true"/>
+    </target>
+    
+    <target name="cc-test-all">
+        <ant dir="build-scripts/project" target="rebuild-env" inheritRefs="true"/>
+        <ant dir="build-scripts/project" target="test-all" inheritRefs="true"/>
+    </target>
+    
+    <!-- New build pattern. Build all new build modules-->
+    <target name="new_test_all">
+        <!-- The following two tasks must be ran seperately.  Otherwise, the "resolve" task is not run before publish_report which will cause the publish to function incorrectly.  Fix when the "publish" task allows a resolveId attribute -->
+        <subant buildpathref="build-paths" verbose="true">
+            <property name="build.root.dir" value="${build.root.dir}" />
+            <target name="test" />
+        </subant>	  
+        <subant buildpathref="build-paths" verbose="true">
+            <property name="build.root.dir" value="${build.root.dir}" />
+            <target name="publish_report" />
+        </subant>	
+    </target>
+
+    <target name="package_for_targetenv">
+        <copy file="${xlib_bin32_dir}/InstallerCommon32.dll" tofile="${build.root.dir}/platform/win32/installer/release/installercommon.dll" preservelastmodified="true" overwrite="false" />
+        <copy file="${xlib_bin32_dir}/InstallerCommon32.dll" tofile="${build.root.dir}/platform/win32/installer/debug/installercommon.dll" preservelastmodified="true" overwrite="false" />
+        <copy file="${xlib_bin32_dir}/Installer_CA32.dll" tofile="${build.root.dir}/platform/win32/release/bin/Installer_CA.dll" preservelastmodified="true" overwrite="false" />
+
+        <if>
+            <equals arg1="${targetenv}" arg2="win_x86"/>
+            <then>
+        <copy file="${xlib_bin32_dir}/IPCJNI32.dll" tofile="${build.root.dir}/release_${targetenv}/IPCJNI.dll" preservelastmodified="true" overwrite="false" />
+        <copy file="${xlib_bin32_dir}/NetworkUtils32.dll" tofile="${build.root.dir}/release_${targetenv}/NetworkUtils.dll" />
+        <copy file="${xlib_bin32_dir}/ResourcePathDiscovery.exe" todir="${build.root.dir}/release_${targetenv}" />
+            </then>
+            <else>
+                <copy file="${xlib_bin64_dir}/IPCJNI.dll" tofile="${build.root.dir}/release_${targetenv}/IPCJNI.dll" preservelastmodified="true" overwrite="false" />
+                <copy file="${xlib_bin64_dir}/NetworkUtils.dll" tofile="${build.root.dir}/release_${targetenv}/NetworkUtils.dll" />
+                <copy file="${xlib_bin64_dir}/ResourcePathDiscovery.exe" todir="${build.root.dir}/release_${targetenv}" />
+            </else>
+        </if>
+
+        <copy file="${xlib_bin32_dir}/XSLTransformer.exe" todir="${build.root.dir}/platform/win32/installer/release" />
+    </target>
+
+    <target name="package">
+        <ant antfile="tomcat_build.xml" target="setup_tomcat" />
+        
+        <copy file="${build.root.dir}/run/server/license/license.dat" todir="${build.root.dir}" />
+
+        <copy file="${build.root.dir}/config/commprofile.template.xml" todir="${build.root.dir}" />
+        <copy file="${build.root.dir}/config/mapping.xml" todir="${build.root.dir}" />
+        <copy file="${build.root.dir}/config/folder.info" todir="${build.root.dir}" />
+        <copy file="${build.root.dir}/config/agentprofile.xml" todir="${build.root.dir}" />
+        <copy file="${build.root.dir}/agent/logging.properties-template" tofile="${build.root.dir}/logging.template.properties" />
+
+        <foreach list="${targetenv.list}" 
+                 target="package_for_targetenv" 
+                 param="targetenv" 
+                 delimiter=";" 
+                 inheritall="true" 
+                 inheritrefs="true"/>
+    </target>
+
+    <target name="test-all" depends="new_test_all" description="Runs all unit tests for the system">
+        <antfetch dir="build-scripts/project" target="test-all" inheritRefs="true" return="junit.fail"/>
+    </target>
+    
+    <!-- Temporary tasks to publish artifacts locally -->
+    <target name="resolve" 
+            description="Resolve all dependencies" 
+            depends="init_ivy">
+        <ivy:resolve conf="*" resolveId="module_resolve_id" file="../ivy.xml"/>
+    </target>
+
+    <target name="publish_locally" depends="resolve">
+        <ivy:publish artifactspattern="${build.root.dir}/([releasetype]_)([os]_)([arch])/([compiler])[artifact].[ext]"
+                     resolver="local-repository"
+                     overwrite="true"
+                     forcedeliver="true"
+                     publishivy="true"
+                     haltonmissing="true"
+                     pubrevision="100000.${ivy.revision.module_resolve_id}"
+                     /> <!-- The pub revision is large to make sure it is taken.  Tried using "latest-strategies" special meaning words, but this didn't work out.  See comments in "ivysettings.xml" file. -->
+        <!-- Need a way to publish ivy files without having to publish all confs-->
+    </target>
+    
+	<target name="run-gradle" description="Run the gradle application">
+        <exec executable="ls" dir=".."/>
+        <exec executable="sh" dir="..">
+            <arg line="gradlew clean build -x test"/>
+			<arg value="-PinternalDependencyLocation=${build.root.dir}/dependencies"/>
+			<arg value="-PexternalDependencyLocation=${xlib_jar_dir}/dependencies"/>
+        </exec>
+	</target>
+
+    <target name="allatori-log" description="Rebuild the allatori log file">
+        <taskdef name="allatori" classname="com.allatori.ant.ObfuscatorTask" classpath="${nlbuildroot}/xlib/jar/allatori.jar" />
+        <property name="obfuscation.jars" value="&lt;jar in=&quot;${nlbuildroot}/build/orig-common-pf.jar&quot; out=&quot;${nlbuildroot}/build/common-pf.jar&quot;/&gt; &lt;jar in=&quot;${nlbuildroot}/src/server/dictionary/build/orig-server-dictionary.jar&quot; out=&quot;${nlbuildroot}/src/server/dictionary/build/server-dictionary.jar&quot;/&gt; &lt;jar in=&quot;${nlbuildroot}/build/orig-server-pf.jar&quot; out=&quot;${nlbuildroot}/build/server-pf.jar&quot;/&gt; &lt;jar in=&quot;${nlbuildroot}/build/orig-client-pf.jar&quot; out=&quot;${nlbuildroot}/build/client-pf.jar&quot;/&gt;"/>
+        <property name="obfuscation.logging" value="&lt;property name=&quot;log-file&quot; value=&quot;${nlbuildroot}/src/build-scripts/etc/allatori-log.xml&quot;/&gt;"/>
+        <property name="ignore.classes" value="&lt;class template=&quot;class com.nextlabs.pf.engine.destiny.XACMLPolicyFinderModule&quot;/&gt;"/>
+        <allatori config="${nlbuildroot}/src/build-scripts/etc/allatori-config.xml" />
+    </target>
+</project>

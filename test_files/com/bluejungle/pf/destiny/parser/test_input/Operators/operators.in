@@ -1,0 +1,6 @@
+principal h1 = principal.name eq "A" OR principal.name neq "A" OR
+               principal.name lt "A" or principal.name lte "A" OR
+               principal.name gt "A" or principal.name gte "A" OR
+               principal.name eq_ci "A" OR principal.name neq_ci "A" OR
+               principal.name lt_ci "A" or principal.name lte_ci "A" OR
+               principal.name gt_ci "A" or principal.name gte_ci "A";

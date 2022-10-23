@@ -1,0 +1,22 @@
+<module name="trusted-callers" class="com.bluejungle.destiny.server.security.CertificateCheckerModule">
+    <InFlow>
+        <handler name="InFlowEnrollmentHandler" class="com.bluejungle.destiny.server.security.CertificateChecker">
+            <order phase="certCheckerRequestPhase"/>
+        </handler>
+    </InFlow>
+    <InFlowFault>
+        <handler name="FaultInFlowEnrollmentHandler" class="com.bluejungle.destiny.server.security.CertificateChecker">
+            <order phase="certCheckerRequestPhase"/>
+        </handler>
+    </InFlowFault>
+    <OutFlow>
+        <handler name="OutFlowEnrollmentHandler" class="com.bluejungle.destiny.server.security.CertificateChecker">
+            <order phase="certCheckerResponsePhase"/>
+        </handler>
+    </OutFlow>
+    <OutFlowFault>
+        <handler name="FaultOutFlowEnrollmentHandler" class="com.bluejungle.destiny.server.security.CertificateChecker">
+            <order phase="certCheckerResponsePhase"/>
+        </handler>
+    </OutFlowFault>
+</module>

@@ -1,0 +1,534 @@
+<project name="build_xlib" default="all" basedir="..">
+
+	<!-- Properties -->
+
+	<property name="nlbuildroot" location="${basedir}"/>
+
+	<property file="${nlbuildroot}/scripts/build.properties" />
+	<property file="${nlbuildroot}/src/build-scripts/etc/build.properties" />
+
+	<!-- Dump properties -->
+	<echoproperties />
+
+	<echo message="INFO: Dump properties completed" />
+
+	<!-- Sanity checks -->
+	<fail message="external.dir is not set" unless="external.dir" />
+	<fail message="external.dir is empty">
+		<condition>
+			<equals arg1="${external.dir}" arg2="" trim="true" />
+		</condition>
+	</fail>
+	<available file="${external.dir}" type="dir" property="local.external.dir_exists" />
+	<fail message="external.dir directory does not exist - ${external.dir}" unless="local.external.dir_exists" />
+
+	<echo message="INFO: Sanity check completed (no error)" />
+
+	<!-- Targets-->
+	<target name="all" depends="clean, prepare_fate_x86, prepare_fate_x64, prepare_installer_x86, prepare_installer_x64, prepare_external_java, prepare_external_x86, prepare_external_x64, prepare_rms_externals" />
+
+	<target name="prepare_fate_x86">
+		<mkdir dir="${xlib_bin32_dir}" />
+
+		<!-- Extract files -->
+		<unzip src="${xlib_fate_build_artifacts_bin_zip_file}" dest="${xlib_bin32_dir}" overwrite="yes">
+			<patternset>
+				<include name="bin/release_win_x86/NetworkUtils32.dll" />
+				<include name="bin/release_win_x86/ResourcePathDiscovery.exe" />
+				<include name="bin/release_win_x86/IPCJNI32.dll" />
+				<include name="bin/release_win_x86/nlQuench.exe" />
+			</patternset>
+			<mapper type="flatten" />
+		</unzip>
+
+		<!-- Check if file exists
+		Notes: Currently, Unzip task or ZipFileSet does not have a way to report error if a file
+		cannot be found in a zip file. In addition, there is no simple way to check if a file
+		exists in Ant. We can call out to Bash to check if a file exists, but that creates an
+		unnecessary dependency on Bash. In the following, we try to check if a file exist using
+		a fake move. Doing this, an error will be generated if a file does not exist.
+		-->
+		<move file="${xlib_bin32_dir}/NetworkUtils32.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/ResourcePathDiscovery.exe" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/IPCJNI32.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/nlQuench.exe" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+	</target>
+
+	<target name="prepare_fate_x64">
+		<mkdir dir="${xlib_bin64_dir}" />
+
+		<!-- Extract files -->
+		<unzip src="${xlib_fate_build_artifacts_bin_zip_file}" dest="${xlib_bin64_dir}" overwrite="yes">
+			<patternset>
+				<include name="bin/release_win_x64/NetworkUtils.dll" />
+				<include name="bin/release_win_x64/ResourcePathDiscovery.exe" />
+				<include name="bin/release_win_x64/IPCJNI.dll" />
+				<include name="bin/release_win_x64/nlQuench.exe" />
+			</patternset>
+			<mapper type="flatten" />
+		</unzip>
+
+		<!-- Check if file exists
+		Notes: Currently, Unzip task or ZipFileSet does not have a way to report error if a file
+		cannot be found in a zip file. In addition, there is no simple way to check if a file
+		exists in Ant. We can call out to Bash to check if a file exists, but that creates an
+		unnecessary dependency on Bash. In the following, we try to check if a file exist using
+		a fake move. Doing this, an error will be generated if a file does not exist.
+		-->
+		<move file="${xlib_bin64_dir}/NetworkUtils.dll" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/ResourcePathDiscovery.exe" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/IPCJNI.dll" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/nlQuench.exe" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+	</target>
+
+	<target name="prepare_installer_x86">
+		<mkdir dir="${xlib_bin32_dir}" />
+
+		<!-- Extract files -->
+		<unzip src="${xlib_installer_build_artifacts_xlib_bin_zip_file}" dest="${xlib_bin32_dir}" overwrite="yes">
+			<patternset>
+				<include name="bin/release_win_x86/InstallerCommon32.dll" />
+				<include name="bin/release_win_x86/Installer_CA32.dll" />
+				<include name="bin/release_win_x86/DatabaseTester32.dll" />
+				<include name="bin/release_win_x86/PostgresTester.exe" />
+				<include name="bin/release_win_x86/XSLTransformer.exe" />
+			</patternset>
+			<mapper type="flatten" />
+		</unzip>
+
+		<!-- Check if file exists
+		Notes: Currently, Unzip task or ZipFileSet does not have a way to report error if a file
+		cannot be found in a zip file. In addition, there is no simple way to check if a file
+		exists in Ant. We can call out to Bash to check if a file exists, but that creates an
+		unnecessary dependency on Bash. In the following, we try to check if a file exist using
+		a fake move. Doing this, an error will be generated if a file does not exist.
+		-->
+		<move file="${xlib_bin32_dir}/InstallerCommon32.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/Installer_CA32.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/DatabaseTester32.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/PostgresTester.exe" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin32_dir}/XSLTransformer.exe" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" />
+	</target>
+
+	<target name="prepare_installer_x64">
+		<mkdir dir="${xlib_bin64_dir}" />
+
+		<!-- Extract files -->
+		<!-- unzip src="${xlib_installer_build_artifacts_xlib_bin_zip_file}" dest="${xlib_bin64_dir}" overwrite="yes">
+			<patternset>
+				<include name="bin/release_win_x64/InstallerCommon.dll" />
+				<include name="bin/release_win_x64/Installer_CA.dll" />
+				<include name="bin/release_win_x64/DatabaseTester.dll" />
+				<include name="bin/release_win_x64/PostgresTester.exe" />
+				<include name="bin/release_win_x64/XSLTransformer.exe" />
+			</patternset>
+			<mapper type="flatten" />
+		</unzip -->
+
+		<!-- Check if file exists
+		Notes: Currently, Unzip task or ZipFileSet does not have a way to report error if a file
+		cannot be found in a zip file. In addition, there is no simple way to check if a file
+		exists in Ant. We can call out to Bash to check if a file exists, but that creates an
+		unnecessary dependency on Bash. In the following, we try to check if a file exist using
+		a fake move. Doing this, an error will be generated if a file does not exist.
+		-->
+		<!-- move file="${xlib_bin64_dir}/InstallerCommon.dll" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/Installer_CA.dll" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/DatabaseTester.dll" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/PostgresTester.exe" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" />
+		<move file="${xlib_bin64_dir}/XSLTransformer.exe" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" / -->
+	</target>
+
+	<target name="prepare_external_java">
+		<mkdir dir="${xlib_jar_dir}" />
+
+		<!-- IMPORTANT: There are multiple versions of the following libraries being used.
+		Need to check if those are intentional. If no, we should consolidate to one of each.
+			- commons-collection.jar (from ajax4jsf, hibernate)
+			- commons-logging.jar (from commons-logging, jsf, hibernate, axis, Ivy, and others)
+			- axis.jar (compiled using v1.4 from Ivy, packaged with 1.2 from external.dir)
+			- antlr.jar (compiled using 2.7.4 from Ivy, packaged with 2.7.4 from external.dir)
+			- junit.jar (compiled using 4.3.1 from Ivy, packaged with 3.8.3 from external.dir)
+			- mail.jar (from sun and javamail)
+			- castor.jar (different versions all rename to castor.jar - v0.9 is not fixed)
+			- ehcache.jar (no fixed completely)
+			- hibernate.jar (compiled with a version from Ivy, packaged with a version from external.dir)
+			- resolver.jar (xerces, two versions both renamed to resolver.jar)
+		-->
+
+		<copy file="${allatori.dir}/lib/allatori.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/ant-contrib/ant-contrib-1.0b2/lib/ant-contrib.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/antlr/antlr-2.7.7/antlr-2.7.7.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/minidev-asm/1.0.2/asm-1.0.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+		<copy file="${external.dir}/apache-openaz/0.0.2/openaz-pep-0.0.2-SNAPSHOT.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/apache-openaz/0.0.2/openaz-xacml-0.0.2-SNAPSHOT.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- axis2 1.8.0 needs this for ant codegen, but no longer packages it. We'll use the 1.7.9 version -->
+        <copy file="${external.dir}/axis/axis2-1.7.9/lib/activation-1.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-ant-plugin-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-adb-codegen-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axiom-api-1.3.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axiom-dom-1.3.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axiom-impl-1.3.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axiom-jaxb-1.3.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-adb-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-clustering-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-codegen-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-corba-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-fastinfoset-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-jaxbri-codegen-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-jaxws-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-jibx-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-jibx-codegen-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-json-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-kernel-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-metadata-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-mtompolicy-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-saaj-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-soapmonitor-servlet-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-spring-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-base-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-http-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-jms-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-local-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-mail-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-tcp-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-udp-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-transport-xmpp-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/axis2-xmlbeans-1.8.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/commons-fileupload-1.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/commons-io-2.11.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/geronimo-annotation_1.0_spec-1.1.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/geronimo-jaxws_2.2_spec-1.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/geronimo-ws-metadata_2.0_spec-1.1.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- axis2 has unbundled this and jaxb-api. We'll use the 1.7.9 version of
+             impl and a newer version of api -->
+		<copy file="${external.dir}/axis/axis2-1.7.9/lib/jaxb-impl-2.2.6.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/jaxb-xjc-2.3.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/jaxen-1.2.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/jaxws-tools-2.3.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/jettison-1.4.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/jibx-run-1.3.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/jsr311-api-1.1.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/mex-1.8.0-impl.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/neethi-3.1.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/stax2-api-4.2.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/woden-core-1.0M10.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/wsdl4j-1.6.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/xml-resolver-1.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/axis/axis2-1.8.0/lib/xmlschema-core-2.2.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/addressing-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/axis2-jaxws-mar-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/mex-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/mtompolicy-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/ping-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/scripting-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/axis/axis2-1.8.0/repository/modules/soapmonitor-1.8.0.mar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/apache-mime4j-core/apache-mime4j-core-0.8.7/apache-mime4j-core-0.8.7.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+        <copy file="${external.dir}/balana/balana-pdp/1.2.2/balana.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        <copy file="${external.dir}/balana/balana-pdp/1.2.2/balana-utils.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+        <copy file="${external.dir}/bouncycastlejce/bcprov-jdk15on/bcprov-jdk15on-1.68.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+		<copy file="${external.dir}/c3p0/c3p0-0.9.5.5/lib/c3p0-0.9.5.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/c3p0/c3p0-0.9.5.5/lib/mchange-commons-java-0.2.19.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/castor/castor0.9.5.4/castor-0.9.5.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/castor/castor0.9.5.4/castor-0.9.5.4-xml.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/cglib/cglib-nodep-2.2.2/cglib-nodep-2.2.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+		<copy file="${external.dir}/checkstyle/checkstyle-3.5/checkstyle-all-3.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/commons-beanutils/commons-beanutils-1.9.4/commons-beanutils-1.9.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-codec/commons-codec-1.15/commons-codec-1.15.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-digester/commons-digester-2.1/commons-digester-2.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-discovery/commons-discovery-0.5/commons-discovery-0.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-collections/commons-collections-3.2.2/commons-collections-3.2.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-httpclient/commons-httpclient-3.1/commons-httpclient-3.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-lang3/commons-lang3-3.11/commons-lang3-3.11.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-lang/commons-lang-2.6/commons-lang-2.6.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-ssl/not-yet-commons-ssl-0.3.9/not-yet-commons-ssl-0.3.9.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+		<copy file="${external.dir}/commons-logging/commons-logging-1.2/commons-logging-1.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/commons-ssl/not-yet-commons-ssl-0.3.9/not-yet-commons-ssl-0.3.9.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+
+		<copy file="${external.dir}/db2/jcc-11.5.7.0/db2jcc4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/disruptor/disruptor-3.3.11.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/dnsjava/dnsjava.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/dom4j/dom4j-2.1.3/dom4j-2.1.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.core.runtime_3.0.2/runtime.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.jface_3.0.2/jface.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.osgi_3.0.1/console.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.osgi_3.0.1/core.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.osgi_3.0.1/defaultAdaptor.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.osgi_3.0.1/eclipseAdaptor.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.osgi_3.0.1/osgi.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.osgi_3.0.1/resolver.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.swt.win32_3.0.2/ws/win32/swt.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.ui_3.0.2/ui.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.core.commands_3.4.0.I20080509-2000.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.core.runtime_3.4.0.v20080512.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.equinox.common_3.4.0.v20080421-2006.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.jface_3.4.2.M20090107-0800.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.osgi_3.4.3.R34x_v20081215-1030.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.swt.win32.win32.x86_64_3.4.1.v3452b.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.swt_3.4.2.v3452b.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/org.eclipse.ui_3.4.2.M20090204-0800.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- Keep older version of ehcache for hibernate -->
+		<copy file="${external.dir}/ehcache/ehcache-1.1/ehcache-1.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- Use newer version of ehcache for PDP -->
+		<copy file="${external.dir}/ehcache/ehcache-2.10.9.2/ehcache-2.10.9.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/esapi/esapi-2.3.0.0/esapi-2.3.0.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/failureaccess/failureaccess-1.0.1/failureaccess-1.0.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        <copy file="${external.dir}/filecomp/1.1/filecomp.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/google-java-format/google-java-format-1.15.0/google-java-format-1.15.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/guava/31.1/guava-31.1-jre.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/gson/gson-2.9/gson-2.9.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/hibernate/hibernate-2.1/hibernate2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/hibernate/hibernate-2.1/lib/cglib-full-2.0.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/hibernate/hibernate-2.1/lib/jta.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/hibernate/hibernate-2.1/lib/odmg-3.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/jargs/jargs-1.0/lib/jargs.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/jaxb/jaxb-2.3.1/jaxb-api-2.3.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/jaxws-ri/jaxws-ri-2.2.10/lib/javax.xml.soap-api.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+        <copy file="${external.dir}/jcifs/jcifs-1.3.19/jcifs-1.3.19.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/jcsc/jcsc-0.97/lib/JCSC.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/jcsc/jcsc-0.97/lib/gnu-regexp.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/jldap/jldap_APR_2006_NoHang/lib/ldap.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		
+		<copy file="${external.dir}/joda-time/joda-time-2.9.1/joda-time-2.9.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<!-- Note: We need junit 3.8.1 to compile /src/server/apps/mgmtConsole/src/java/test/build.xml -->
+		<copy file="${external.dir}/junit/junit3.8.1/junit.jar" tofile="${xlib_jar_dir}/junit-3.8.1.jar" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/junit/junit4.3/junit-4.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/licensemanager/licensemanager2.19/lib/jakarta-regexp-1.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/licensemanager/licensemanager2.19/lib/licensemanager_public.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/mail/mail-1.4/mail-1.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/mockobject/mockobjects-0.09/mockobjects-core-0.09.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/mockobject/mockobjects-0.09/mockobjects-jdk1.4-0.09.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/mockobject/mockobjects-0.09/mockobjects-jdk1.4-j2ee1.3-0.09.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/msal4j/1.12.0/msal4j-1.12.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/nimbus-content-type/2.1/content-type-2.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        <copy file="${external.dir}/nimbus-jose-jwt/8.14.1/nimbus-jose-jwt-8.14.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/oauth2-oidc-sdk/7.4/oauth2-oidc-sdk-7.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+		<copy file="${external.dir}/OneJar/one-jar-boot-0.97.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+		<mkdir dir="${xlib_dir}/onejar"/>
+		<copy todir="${xlib_dir}/onejar" preservelastmodified="true" overwrite="false" verbose="true">
+			<fileset dir="${external.dir}/OneJar/one-jar-boot-0.97">
+				<exclude name="src/**"/>
+			</fileset>
+		</copy>
+
+		<copy file="${external.dir}/openpdf/openpdf-1.3.25/openpdf-1.3.25.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/opensaml/opensaml-2.6.5/opensaml-2.6.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/opensaml/opensaml-2.6.5/lib/openws-1.5.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/opensaml/opensaml-2.6.5/lib/velocity-1.7.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/opensaml/opensaml-2.6.5/lib/xmlsec-1.5.7.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/opensaml/opensaml-2.6.5/lib/xmltooling-1.4.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		
+		<!--  For license module -->
+		<copy file="${external.dir}/bouncycastlejce/bouncycastle_1_28/bcprov-jdk14-128.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<!--  Copy java SDK jar and keymanagement service jar from fate artifacts -->
+		<unzip src="${xlib_fate_build_artifacts_bin_zip_file}" dest="${xlib_jar_dir}" overwrite="false">
+			<patternset>
+				<include name="bin/java/nlJavaSDK2.jar" />
+				<include name="bin/java/KeyManagementService.jar" />
+			</patternset>
+			<mapper type="flatten" />
+		</unzip>
+
+		<!-- ================= -->
+		<copy file="${external.dir}/oracle/ojdbc11/ojdbc11.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/postgresql-jdbc/postgresql-42.3.6/postgresql-42.3.6.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/rest-api-xmlbeans/rest-api-xmlbeans.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/sharepoint-services/axis2/sharepoint-services.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/snakeyaml/snakeyaml-1.16/snakeyaml-1.16.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/spring-security/spring-security-crypto-5.7.3/spring-security-crypto-5.7.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/sqlserver/jTDS_1.2.2/jtds-1.2.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/sqlserver/sqljdbc_10.2.1/mssql-jdbc-10.2.1.jre11.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/swtdatepicker/swtdatepicker_1.3bj/swt-datepicker.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- We compile against these, but don't include them in war/jar files. These are old versions, but it doesn't seem worthwhile to include a new tomcat
+             version in externals just for this. Perhaps modify gradle to download them??
+             -->
+		<copy file="${external.dir}/tomcat/apache-tomcat-8.5.45/lib/servlet-api.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/tomcat/apache-tomcat-8.5.45/lib/tomcat-coyote.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/tomcat-juli/10.1.0-M10/tomcat-juli-10.1.0-M10.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        <copy file="${external.dir}/tomcat-tribes/10.1.0-M10/tomcat-tribes-10.1.0-M10.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+		<copy file="${external.dir}/xalan/xalan-2.7.2/xalan-2.7.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/xalan/xalan-2.7.2/serializer-2.7.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/xerces/xerces-2_12_1/xercesImpl-2.12.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/xerces/xerces-2_12_1/xml-apis.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/xmlbeans/xmlbeans-5.0.0/xmlbeans-5.0.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        
+		<copy file="${external.dir}/httpclient/httpclient-4.5.13/httpclient-4.5.13.jar"		todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/httpcore/httpcore-4.4.11/httpcore-4.4.11.jar"			todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <!-- used by rest-api -->
+		<copy file="${external.dir}/jetty-runner/jetty-runner-9.2.7.v20150116/jetty-runner-9.2.7.v20150116.jar"			todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+	</target>
+
+	<target name="prepare_external_x86">
+		<mkdir dir="${xlib_bin32_dir}" />
+		<copy file="${external.dir}/eclipse/eclipse3.0.2/plugins/org.eclipse.swt.win32_3.0.2/os/win32/x86/swt-win32-3064.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCP71.DLL" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCP71.PDB" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCP71D.DLL" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCP71D.PDB" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCR71.DLL" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCR71.PDB" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCR71D.DLL" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/msvc/vc7/bin/MSVCR71D.PDB" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/xalan/Xalan-C_1_10_0-win32-msvc_60/bin/Xalan-C_1_10.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/xalan/Xalan-C_1_10_0-win32-msvc_60/bin/XalanMessages_1_10.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/xerces/xerces-c-2.8.0-windows_2000-msvc_60/bin/xerces-c_2_7.dll" todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<!-- Copy intel-32 support files for Perceptive document converters -->
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYS11df.dll"			todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/chartdir51.dll" 		todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYS11dfjava.dll" 		todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYSautocad.dll" 		todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYSpdf6.dll" 			todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYSreaders.dll" 		todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYSreadershd.dll"		todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-32/ISYSreadershtml.dll"	todir="${xlib_bin32_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+	</target>
+
+	<target name="prepare_external_x64">
+		<mkdir dir="${xlib_bin64_dir}" />
+		<copy file="${external.dir}/eclipse/eclipse3.4.2_x64/eclipse/plugins/swt-win32-3452.dll" todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<!-- Copy intel-64 support files for Perceptive document converters -->
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYS11df.dll"			todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/chartdir51.dll" 		todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYS11dfjava.dll" 		todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYSautocad.dll" 		todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYSpdf6.dll" 			todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYSreaders.dll" 		todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYSreadershd.dll"		todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/perceptive-11.0/intel-64/ISYSreadershtml.dll"	todir="${xlib_bin64_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+	</target>
+
+	<target name="prepare_rms_externals">
+		<copy file="${external.dir}/hsql/hsqldb-2.3.3/hsqldb-2.3.3.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/jacoco/0.7.5/asm-all-5.0.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/jacoco/0.7.5/org.jacoco.agent-0.7.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/jacoco/0.7.5/org.jacoco.ant-0.7.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/jacoco/0.7.5/org.jacoco.core-0.7.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/jacoco/0.7.5/org.jacoco.report-0.7.5.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/joda-time/joda-time-2.9.1/joda-time-2.9.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/json-simple/json-simple-1.1.1/json-simple-1.1.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/json-path/2.0.0/json-path-2.0.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/json-smart/2.4.8/json-smart-2.4.8.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/junit/4.12/junit-4.12.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/log4j/apache-log4j-2.18.0/log4j-api-2.18.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        <copy file="${external.dir}/log4j/apache-log4j-2.18.0/log4j-core-2.18.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        <copy file="${external.dir}/log4j/apache-log4j-2.18.0/log4j-jcl-2.18.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+        <copy file="${external.dir}/log4j/apache-log4j-2.18.0/log4j-slf4j-impl-2.18.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+
+		<copy file="${external.dir}/lucene/4.10.4/lucene-analyzers-common-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-core-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-grouping-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-highlighter-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-join-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-memory-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-misc-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-queries-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-queryparser-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-sandbox-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-spatial-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/lucene/4.10.4/lucene-suggest-4.10.4.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/jcl-over-slf4j-1.7.28.jar"	todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/jul-to-slf4j-1.7.28.jar"	todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/log4j-over-slf4j-1.7.28.jar"	todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/slf4j-api-1.7.28.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/slf4j-jdk14-1.7.28.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/slf4j-jcl-1.7.28.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/slf4j-log4j12-1.7.28.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/slf4j/slf4j-1.7.28/slf4j-simple-1.7.28.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+        
+		<copy file="${external.dir}/spatial4j/0.4.1/spatial4j-0.4.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/servlet/javax.servlet-api-3.1.0/javax.servlet-api-3.1.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+		<copy file="${external.dir}/spring/4.2.2/spring-aop-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-beans-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-context-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-context-support-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-core-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-data-commons-1.11.1.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-data-elasticsearch-1.3.1.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-expression-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-jdbc-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-orm-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-test-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-tx-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-web-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/4.2.2/spring-webmvc-4.2.2.RELEASE.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/spring/spring-4.2.4/aopalliance-1.0.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+		<copy file="${external.dir}/auth0-java-jwt/3.19.2/java-jwt-3.19.2.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true" />
+
+        <copy file="${external.dir}/axis/axis2-1.8.0/lib/xmlbeans-3.0.1.jar" todir="${xlib_jar_dir}" preservelastmodified="true" overwrite="false" verbose="true"/>
+	</target>
+
+	<target name="clean">
+		<delete dir="${xlib_dir}" />
+	</target>
+</project>

@@ -1,0 +1,448 @@
+<project name="dabs_wsdl_build" default="build">
+    
+    <property name="wsdl.src.dir"      value="${basedir}"/>
+    <property name="build.dest"   value="${build.root.dir}/server/container/dabs/WEB-INF/classes"/>
+    <property name="build.gendest" value="${build.root.dir}/server/container/dabs/genclasses"/>
+    <property name="services.agent.dir" value="com/bluejungle/destiny/services/agent"/>
+	<property name="types.sharedfolder.dir" value="com/bluejungle/destiny/types/shared_folder"/>
+	<property name="types.customobligations.dir" value="com/bluejungle/destiny/types/custom_obligations"/>
+    <property name="services.deployment.dir" value="com/bluejungle/destiny/services/deployment"/>
+    <property name="services.log.dir" value="com/bluejungle/destiny/services/log"/>
+    <property name="services.ping.dir" value="com/bluejungle/destiny/services/ping"/>
+    <property name="nextlabs.servicebase.dir" value="com/nextlabs/destiny/"/>
+    <property name="nextlabs.log.services.v2.dir" value="${nextlabs.servicebase.dir}/services/log/v2"/>
+    <property name="nextlabs.log.types.v2.dir" value="${nextlabs.servicebase.dir}/types/log/v2"/>
+    <property name="nextlabs.log.interfaces.v2.dir" value="${nextlabs.servicebase.dir}/interfaces/log/v2"/>
+    <property name="nextlabs.log.bindings.v2.dir" value="${nextlabs.servicebase.dir}/bindings/log/v2"/>
+    <property name="nextlabs.log.services.v3.dir" value="${nextlabs.servicebase.dir}/services/log/v3"/>
+    <property name="nextlabs.log.types.v3.dir" value="${nextlabs.servicebase.dir}/types/log/v3"/>
+    <property name="nextlabs.log.interfaces.v3.dir" value="${nextlabs.servicebase.dir}/interfaces/log/v3"/>
+    <property name="nextlabs.log.bindings.v3.dir" value="${nextlabs.servicebase.dir}/bindings/log/v3"/>
+    <property name="nextlabs.log.services.v4.dir" value="${nextlabs.servicebase.dir}/services/log/v4"/>
+    <property name="nextlabs.log.types.v4.dir" value="${nextlabs.servicebase.dir}/types/log/v4"/>
+    <property name="nextlabs.log.interfaces.v4.dir" value="${nextlabs.servicebase.dir}/interfaces/log/v4"/>
+    <property name="nextlabs.log.bindings.v4.dir" value="${nextlabs.servicebase.dir}/bindings/log/v4"/>
+    <property name="nextlabs.log.services.v5.dir" value="${nextlabs.servicebase.dir}/services/log/v5"/>
+    <property name="nextlabs.log.types.v5.dir" value="${nextlabs.servicebase.dir}/types/log/v5"/>
+    <property name="nextlabs.log.interfaces.v5.dir" value="${nextlabs.servicebase.dir}/interfaces/log/v5"/>
+    <property name="nextlabs.log.bindings.v5.dir" value="${nextlabs.servicebase.dir}/bindings/log/v5"/>
+
+    <path id="compile.dabs.classpath">
+        <path refid="compile.classpath"/>
+        <pathelement path="${build.root.dir}/common-framework.jar"/>
+        <pathelement path="${build.root.dir}/management-types.jar"/>
+        <pathelement path="${build.root.dir}/server-framework.jar"/>
+        <pathelement path="${build.root.dir}/server-datasource.jar"/>
+        <pathelement path="${build.root.dir}/server-base.jar"/>
+        <pathelement path="${build.root.dir}/server-dcsf.jar"/>
+        <pathelement path="${build.root.dir}/server-dcsf-test.jar"/>
+        <pathelement path="${build.root.dir}/agent-manager.jar"/>
+        <pathelement path="${build.root.dir}/policy-deploy-manager.jar"/>
+        <pathelement path="${build.root.dir}/profile-manager.jar"/>
+        <pathelement path="${build.root.dir}/server-shared-enumerations.jar"/>
+        <pathelement path="${build.dest}"/>
+        <pathelement path="${build.gendest}"/>
+    </path>
+    
+    <target name="build"/>
+    
+    <target name="pre-build">
+        <mkdir dir="${build.dest}"/>
+        <mkdir dir="${build.gendest}"/>
+        <mkdir dir="${gen.dir}/src/${services.deployment.dir}/"/>
+        <mkdir dir="${gen.dir}/src/${services.agent.dir}/"/>
+        <mkdir dir="${gen.dir}/src/${services.log.dir}/"/>
+        <mkdir dir="${gen.dir}/src/${services.ping.dir}/"/>
+        <mkdir dir="${gen.dir}/src/${nextlabs.servicebase.dir}/"/>
+    </target>
+    
+    <target name="wsdl-compile" description="Compile generated wsdl code">
+        <javac srcdir="${gen.dir}/src" destdir="${build.gendest}" debug="${compile.debug}" verbose="${compile.verbose}" source="${compile.source}" target="${compile.target}" bootclasspath="${compile.bootclasspath}" includeantruntime="false">
+            <classpath refid="compile.classpath"/>
+            <include name="${services.deployment.dir}/**/*.java"/>
+            <include name="${services.agent.dir}/**/*.java"/>
+            <include name="${services.log.dir}/**/*.java"/>
+            <include name="${services.ping.dir}/**/*.java"/>
+            <include name="${nextlabs.servicebase.dir}/**/*.java"/>
+        	<include name="${types.sharedfolder.dir}/*.java"/>
+        	<include name="${types.customobligations.dir}/*.java"/>
+        </javac>
+    </target>
+    
+    <target name="wsdl-generate" depends="pre-build" description="Generates code from WSDL">
+
+        <!-- Takes care of PolicyDeploymentService -->
+        <!--
+            implementationClassName="com.bluejungle.destiny.container.dabs.DABSPolicyDeploymentServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.services.deployment"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="PolicyDeploymentServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${services.deployment.dir}/PolicyDeploymentService.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.dabs.DABSPolicyDeploymentServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/PolicyDeploymentService/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+
+        <!-- Takes care of AgentDeploymentService -->
+        <!--
+            implementationClassName="com.bluejungle.destiny.container.dabs.DABSAgentDeploymentServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.services.deployment"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="AgentDeploymentServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${services.deployment.dir}/AgentDeploymentService.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.dabs.DABSAgentDeploymentServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/AgentDeploymentService/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+
+        <!-- Takes care of AgentService -->
+        <!--
+            implementationClassName="com.bluejungle.destiny.container.dabs.DABSAgentServiceImpl"
+            timeout="-1"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            accessList="Legacy_Agent=*- registerAgent;Agent=*- registerAgent;Orig_Temp_Agent=registerAgent;Temp_Agent=registerAgent"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.services.agent"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="AgentServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${services.agent.dir}/AgentServiceIFPort.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.dabs.DABSAgentServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/AgentService/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+        
+        <!-- Takes care of LogService -->
+        <!--
+            implementationClassName="com.bluejungle.destiny.container.dabs.DABSLogServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="Agent Legacy_Agent DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.services.log"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="LogServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${services.log.dir}/LogServiceIFPort.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.dabs.DABSLogServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/LogService/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+        
+        <!-- Takes care of LogService.v2 -->
+        <!--
+            implementationClassName="com.nextlabs.destiny.bindings.log.v2.DABSLogServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+                   trustedCallers="Agent Legacy_Agent DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://nextlabs.com/destiny/services/log/v2=com.nextlabs.destiny.services.log.v2,http://nextlabs.com/destiny/bindings/log/v2=com.nextlabs.destiny.bindings.log.v2,http://nextlabs.com/destiny/interfaces/log/v2=com.nextlabs.destiny.interfaces.log.v2,http://nextlabs.com/destiny/types/log/v2=com.nextlabs.destiny.types.log.v2"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.nextlabs.destiny.interfaces.log.v2"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="LogServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${nextlabs.servicebase.dir}/services/LogServiceIFPort.v2.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.nextlabs.destiny.bindings.log.v2.DABSLogServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/LogService.v2/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+        
+        <!-- Takes care of LogService.v3 -->
+        <!--
+            implementationClassName="com.nextlabs.destiny.bindings.log.v3.DABSLogServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="Agent Legacy_Agent DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://nextlabs.com/destiny/services/log/v3=com.nextlabs.destiny.services.log.v3,http://nextlabs.com/destiny/bindings/log/v3=com.nextlabs.destiny.bindings.log.v3,http://nextlabs.com/destiny/interfaces/log/v3=com.nextlabs.destiny.interfaces.log.v3,http://nextlabs.com/destiny/types/log/v3=com.nextlabs.destiny.types.log.v3"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.nextlabs.destiny.interfaces.log.v3"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="LogServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${nextlabs.servicebase.dir}/services/LogServiceIFPort.v3.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.nextlabs.destiny.bindings.log.v3.DABSLogServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/LogService.v3/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+        
+        <!-- Takes care of LogService.v4 -->
+        <!--
+            implementationClassName="com.nextlabs.destiny.bindings.log.v4.DABSLogServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="Agent Legacy_Agent DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://nextlabs.com/destiny/services/log/v4=com.nextlabs.destiny.services.log.v4,http://nextlabs.com/destiny/bindings/log/v4=com.nextlabs.destiny.bindings.log.v4,http://nextlabs.com/destiny/interfaces/log/v4=com.nextlabs.destiny.interfaces.log.v4,http://nextlabs.com/destiny/types/log/v4=com.nextlabs.destiny.types.log.v4"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.nextlabs.destiny.interfaces.log.v4"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="LogServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${nextlabs.servicebase.dir}/services/LogServiceIFPort.v4.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.nextlabs.destiny.bindings.log.v4.DABSLogServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/LogService.v4/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+
+        <!-- Takes care of LogService.v5 -->
+        <!--
+            implementationClassName="com.nextlabs.destiny.bindings.log.v5.DABSLogServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="Agent Legacy_Agent DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--namespace2package"/>
+            <arg value="http://nextlabs.com/destiny/services/log/v5=com.nextlabs.destiny.services.log.v5,http://nextlabs.com/destiny/bindings/log/v5=com.nextlabs.destiny.bindings.log.v5,http://nextlabs.com/destiny/interfaces/log/v5=com.nextlabs.destiny.interfaces.log.v5,http://nextlabs.com/destiny/types/log/v5=com.nextlabs.destiny.types.log.v5"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.nextlabs.destiny.interfaces.log.v5"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="LogServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${nextlabs.servicebase.dir}/services/LogServiceIFPort.v5.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.nextlabs.destiny.bindings.log.v5.DABSLogServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/LogService.v5/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+
+
+        <!-- Takes care of PingService -->
+        <!--
+            implementationClassName="com.bluejungle.destiny.container.dabs.DABSPingServiceImpl"
+            factory="com.bluejungle.destiny.wsgen.SecureServiceGenerator"
+            trustedCallers="DCC"
+        -->
+        <delete dir="${gen.dir}/resources" failonerror="false"/>
+        <java classname="org.apache.axis2.wsdl.WSDL2Java" fork="true">
+            <classpath refid="compile.classpath"/>
+            <arg value="--all-ports"/>
+            <arg value="--databinding-method"/>
+            <arg value="adb"/>
+            <arg value="--generate-all"/>
+            <arg value="--output"/>
+            <arg value="${gen.dir}"/>
+            <arg value="--package"/>
+            <arg value="com.bluejungle.destiny.services.ping"/>
+            <arg value="--server-side"/>
+            <arg value="--serverside-interface"/>
+            <arg value="--service-description"/>
+            <arg value="--unwrap-params"/>
+            <arg value="-sin"/>
+            <arg value="PingServiceIF"/>
+            <arg value="-uri"/>
+            <arg value="${wsdl.src.dir}/${services.ping.dir}/PingService.wsdl"/>
+        </java>
+        <replaceregexp file="${gen.dir}/resources/services.xml"
+                       match="&lt;parameter name=&quot;ServiceClass&quot;&gt;.*&lt;\/parameter&gt;"
+                       replace="&lt;parameter name=&quot;ServiceClass&quot;&gt;com.bluejungle.destiny.container.dabs.DABSPingServiceImpl&lt;/parameter&gt;"
+                       byline="true"/>
+        <move todir="${gen.dir}/apps/dabs/services/PingService/META-INF/">
+            <fileset dir="${gen.dir}/resources/"/>
+        </move>
+    	
+    	<!-- Manual copy the ExtensionMapper.java to overwrite the generated copy -->
+     	<copy file="${wsdl.src.dir}/../ExtensionMapper.java" todir="${gen.dir}/src/com/bluejungle/destiny/services/agent/" overwrite="true" failonerror="true"/>
+    </target>
+    
+    <target name="wsdl-jar" description="Packages compiled WSDL code">
+        <jar destfile="${build.root.dir}/dabs-dcc-services.jar">
+            <fileset dir="${build.gendest}">
+                <include name="${services.deployment.dir}/*.class"/>
+                <include name="${services.ping.dir}/*.class"/>
+            </fileset>
+        </jar>
+        <jar destfile="${build.root.dir}/deployment-types.jar">
+            <fileset dir="${build.gendest}">
+                <include name="${services.deployment.dir}/types/*.class"/>
+            </fileset>
+        </jar>
+        
+        <jar destfile="${build.root.dir}/dabs-agent-services.jar">
+            <fileset dir="${build.gendest}">
+                <include name="${services.agent.dir}/*.class"/>
+            </fileset>
+        </jar>
+        <jar destfile="${build.root.dir}/agent-types.jar">
+            <fileset dir="${build.gendest}">
+                <include name="${services.agent.dir}/types/*.class"/>
+				<include name="${services.agent.dir}/ExtensionMapper.class"/>
+            	<include name="${types.sharedfolder.dir}/*.class"/>
+            	<include name="${types.customobligations.dir}/*.class"/>
+            </fileset>
+        </jar>
+        
+        <jar destfile="${build.root.dir}/dabs-common-services.jar">
+            <fileset dir="${build.gendest}">
+                <include name="${services.log.dir}/*.class"/>
+                <include name="${nextlabs.log.interfaces.v2.dir}/*.class"/>
+                <include name="${nextlabs.log.services.v2.dir}/*.class"/>
+                <include name="${nextlabs.log.bindings.v2.dir}/*.class"/>
+                <include name="${nextlabs.log.interfaces.v3.dir}/*.class"/>
+                <include name="${nextlabs.log.services.v3.dir}/*.class"/>
+                <include name="${nextlabs.log.bindings.v3.dir}/*.class"/>
+                <include name="${nextlabs.log.interfaces.v4.dir}/*.class"/>
+                <include name="${nextlabs.log.services.v4.dir}/*.class"/>
+                <include name="${nextlabs.log.bindings.v4.dir}/*.class"/>
+				<include name="${nextlabs.log.interfaces.v5.dir}/*.class"/>
+                <include name="${nextlabs.log.services.v5.dir}/*.class"/>
+                <include name="${nextlabs.log.bindings.v5.dir}/*.class"/>
+            </fileset>
+        </jar>
+        <jar destfile="${build.root.dir}/log-types.jar">
+            <fileset dir="${build.gendest}">
+                <include name="${services.log.dir}/types/*.class"/>
+                <include name="${nextlabs.log.types.v2.dir}/*.class"/>
+                <include name="${nextlabs.log.types.v3.dir}/*.class"/>
+                <include name="${nextlabs.log.types.v4.dir}/*.class"/>
+                <include name="${nextlabs.log.types.v5.dir}/*.class"/>
+            </fileset>
+        </jar>
+    </target>
+</project>
